@@ -5,10 +5,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class EnvironmentService {
 
+	public String getMongoUri() {
+		return System.getenv("NINETALES_MONGO_URI");
+	}
+
+	public String getMongoUsersCollectionName() {
+		String env = System.getenv("NINETALES_USERS_COLLECTION_NAME");
+		 return env != null	? env : "users";
+	}
+
 	public String getHypixelAPIKey() {
 		return System.getenv("HYPIXEL_API_KEY");
 	}
-
 
 	public String getDiscordBotToken() {
 		return System.getenv("DISCORD_BOT_TOKEN");

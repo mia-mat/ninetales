@@ -9,21 +9,18 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ws.mia.ninetales.EnvironmentService;
 
 import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class MongoConfiguration {
 
-	public static final String USERS_COLLECTION_NAME;
-	static {
-		String env = System.getenv("NINETALES_USERS_COLLECTION_NAME");
-		USERS_COLLECTION_NAME = env != null	? env : "users";
-	}
+
 
 	@Bean
-	public MongoClient mongoClient() {
-		String uri = System.getenv("NINETALES_MONGO_URI");
+	public MongoClient mongoClient(EnvironmentService environmentService) {
+		String uri = environmentService.getMongoUri();
 		if (uri == null || uri.isBlank()) {
 			throw new IllegalStateException("NINETALES_MONGO_URI environment variable must be set!");
 		}
@@ -41,8 +38,8 @@ public class MongoConfiguration {
 	}
 
 	@Bean
-	public String mongoDatabaseName() {
-		String uri = System.getenv("NINETALES_MONGO_URI");
+	public String mongoDatabaseName(EnvironmentService environmentService) {
+		String uri = environmentService.getMongoUri();
 		ConnectionString connectionString = new ConnectionString(uri);
 		String db = connectionString.getDatabase();
 		if (db == null) {
@@ -57,8 +54,8 @@ public class MongoConfiguration {
 	}
 
 	@Bean
-	public MongoCollection<Document> routesCollection(MongoDatabase database) {
-		return database.getCollection(USERS_COLLECTION_NAME);
+	public MongoCollection<Document> routesCollection(MongoDatabase database, EnvironmentService environmentService) {
+		return database.getCollection(environmentService.getMongoUsersCollectionName());
 	}
 
 }
