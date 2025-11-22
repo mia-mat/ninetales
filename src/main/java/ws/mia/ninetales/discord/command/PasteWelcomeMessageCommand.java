@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
@@ -44,38 +45,37 @@ public class PasteWelcomeMessageCommand extends SlashCommand{
 
 	@Override
 	public CommandData getCommand() {
-		return Commands.slash(COMMAND, ":3");
+		return Commands.slash(COMMAND, ":3")
+				.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
 	}
 
 	@Override
-	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-		if (event.getName().equals(COMMAND)) {
-
-			EmbedBuilder embed = new EmbedBuilder()
-					.setTitle("Ninetales")
-					.setDescription(":3")
-					.setColor(new Color(215, 193, 248, 239));
+	public void onCommand(SlashCommandInteractionEvent event) {
+		EmbedBuilder embed = new EmbedBuilder()
+				.setTitle("Ninetales")
+				.setDescription(":3")
+				.setColor(new Color(215, 193, 248, 239));
 
 
-			// TODO custom emojis
-			net.dv8tion.jda.api.components.buttons.Button bDiscordApply = net.dv8tion.jda.api.components.buttons.Button.of(ButtonStyle.SUCCESS, BUTTON_DISCORD_APPLY_ID, "Apply to join the Ninetales Discord");
-			net.dv8tion.jda.api.components.buttons.Button bGuildApply = net.dv8tion.jda.api.components.buttons.Button.of(ButtonStyle.SUCCESS, BUTTON_GUILD_APPLY_ID, "Apply to join the Ninetales Guild");
-			net.dv8tion.jda.api.components.buttons.Button bAskQuestion = Button.of(ButtonStyle.SECONDARY, BUTTON_ASK_QUESTION_ID, "Ask a Question");
+		// TODO custom emojis
+		net.dv8tion.jda.api.components.buttons.Button bDiscordApply = net.dv8tion.jda.api.components.buttons.Button.of(ButtonStyle.SUCCESS, BUTTON_DISCORD_APPLY_ID, "Apply to join the Ninetales Discord");
+		net.dv8tion.jda.api.components.buttons.Button bGuildApply = net.dv8tion.jda.api.components.buttons.Button.of(ButtonStyle.SUCCESS, BUTTON_GUILD_APPLY_ID, "Apply to join the Ninetales Guild");
+		net.dv8tion.jda.api.components.buttons.Button bAskQuestion = Button.of(ButtonStyle.SECONDARY, BUTTON_ASK_QUESTION_ID, "Ask a Question");
 
-			event.getChannel().sendMessageEmbeds(embed.build())
-					.addComponents(ActionRow.of(bDiscordApply), ActionRow.of(bGuildApply), ActionRow.of(bAskQuestion)).queue();
+		event.getChannel().sendMessageEmbeds(embed.build())
+				.addComponents(ActionRow.of(bDiscordApply), ActionRow.of(bGuildApply), ActionRow.of(bAskQuestion)).queue();
 
-			event.reply(":3")
-					.setEphemeral(true)
-					.queue();
-		}
+		event.reply(":3")
+				.setEphemeral(true)
+				.queue();
 	}
+
 
 	@Override
 	public void onButtonInteraction(ButtonInteractionEvent event) {
 		if(event.getComponentId().equals(BUTTON_DISCORD_APPLY_ID)) {
 			if(!mongoUserService.isUserLinked(event.getUser().getIdLong())) {
-				event.reply("You need to be verified to apply! Head over to <#%s> first.".formatted(environmentService.verifyChannelId())).setEphemeral(true).queue();
+				event.reply("You need to be linked to apply! Head over to <#%s> first.".formatted(environmentService.getLinkChannelId())).setEphemeral(true).queue();
 				return;
 			}
 
@@ -107,7 +107,7 @@ public class PasteWelcomeMessageCommand extends SlashCommand{
 
 		if(event.getComponentId().equals(BUTTON_GUILD_APPLY_ID)) {
 			if(!mongoUserService.isUserLinked(event.getUser().getIdLong())) {
-				event.reply("You need to be verified to apply! Head over to <#%s> first.".formatted(environmentService.verifyChannelId())).setEphemeral(true).queue();
+				event.reply("You need to be linked to apply! Head over to <#%s> first.".formatted(environmentService.getLinkChannelId())).setEphemeral(true).queue();
 				return;
 			}
 

@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ws.mia.ninetales.EnvironmentService;
 import ws.mia.ninetales.discord.command.SlashCommand;
-import ws.mia.ninetales.discord.command.VerifyCommand;
 
 import java.util.List;
 

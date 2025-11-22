@@ -38,8 +38,8 @@ public class EnvironmentService {
 		return System.getenv("TAIL_ROLE_ID");
 	}
 
-	public String verifyChannelId() {
-		return System.getenv("VERIFY_CHANNEL_ID");
+	public String getLinkChannelId() {
+		return System.getenv("LINK_CHANNEL_ID");
 	}
 
 }
