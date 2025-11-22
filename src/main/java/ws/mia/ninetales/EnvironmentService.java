@@ -18,8 +18,16 @@ public class EnvironmentService {
 		return System.getenv("HYPIXEL_API_KEY");
 	}
 
+	public String getHypixelGuildId() {
+		return System.getenv("HYPIXEL_GUILD_ID");
+	}
+
 	public String getDiscordBotToken() {
 		return System.getenv("DISCORD_BOT_TOKEN");
+	}
+
+	public String getDiscordGuildId() {
+		return System.getenv("DISCORD_GUILD_ID");
 	}
 
 	public String getGuildApplicationsCategoryId() {
@@ -34,8 +42,28 @@ public class EnvironmentService {
 		return System.getenv("QUESTIONS_CATEGORY_ID");
 	}
 
+	public String getGuildMemberRoleId() {
+		return System.getenv("GUILD_MEMBER_ROLE_ID");
+	}
+
+	public String getGuildMasterRoleId() {
+		return System.getenv("GUILD_MASTER_ROLE_ID");
+	}
+
 	public String getTailRoleId() {
 		return System.getenv("TAIL_ROLE_ID");
+	}
+
+	public String getVulpixRoleId() {
+		return System.getenv("VULPIX_ROLE_ID");
+	}
+
+	public String getEggRoleId() {
+		return System.getenv("EGG_ROLE_ID");
+	}
+
+	public String getVisitorRoleId() {
+		return System.getenv("VISITOR_ROLE_ID");
 	}
 
 	public String getLinkChannelId() {

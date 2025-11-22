@@ -3,6 +3,7 @@ package ws.mia.ninetales.discord;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -83,7 +84,7 @@ public class ApplicationService {
 
 		String mcUsername = mojangAPI.getUsername(ntUser.getMinecraftUuid());
 		if (mcUsername == null) mcUsername = ntUser.getMinecraftUuid().toString();
-		prepareUserStaffChannel(guild, user, mcUsername, environmentService.getDiscordApplicationsCategoryId())
+		prepareUserStaffChannel(guild, user, mcUsername, environmentService.getGuildApplicationsCategoryId())
 				.setTopic("Ninetales Guild Application for " + mcUsername)
 				.queue(tc -> {
 					mongoUserService.setGuildApplicationChannelId(user.getIdLong(), tc.getIdLong());
@@ -142,21 +143,29 @@ public class ApplicationService {
 				p.sendMessage("After careful consideration by our staff team, your application to join Ninetales has been **accepted**!\nWelcome to the guild <3")
 						.queue();
 				mongoUserService.setStatus(ntUser.getDiscordId(), UserStatus.GUILD_MEMBER);
+				event.getChannel().asTextChannel().sendMessage("Your application has been accepted! Accept your Hypixel invite.").queue();
+				event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
+				mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), true);
+
+				Objects.requireNonNull(
+						event.getGuild()).removeRoleFromMember(UserSnowflake.fromId(event.getUser().getId()),
+						Objects.requireNonNull(event.getGuild().getRoleById(environmentService.getVisitorRoleId()))
+				).queue();
+
+
 			} else {
 				p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales discord has been **accepted**!\nWelcome :3")
 						.queue();
 				mongoUserService.setStatus(ntUser.getDiscordId(), UserStatus.DISCORD_MEMBER);
+				Objects.requireNonNull(
+						event.getGuild()).addRoleToMember(UserSnowflake.fromId(event.getUser().getId()),
+						Objects.requireNonNull(event.getGuild().getRoleById(environmentService.getVisitorRoleId()))
+				).queue();
 			}
 
 			if(optMessage != null && !optMessage.getAsString().isBlank()) {
 				p.sendMessage("A message from our tails: " + optMessage.getAsString()).queue();
 			}
-
-			event.getChannel().asTextChannel().sendMessage("Your application has been accepted! Accept your Hypixel invite.").queue();
-			mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), true);
-			event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
-
-
 		}, (t)-> {
 			event.reply("Failed to accept :(\n"+t.toString()).setEphemeral(true).queue();
 		});

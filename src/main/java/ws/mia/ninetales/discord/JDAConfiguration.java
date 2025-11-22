@@ -18,7 +18,7 @@ public class JDAConfiguration {
 	public JDA jda(List<SlashCommand> commands, List<EventListener> listeners, EnvironmentService environmentService) throws InterruptedException {
 		JDA jda = JDABuilder
 				.createDefault(environmentService.getDiscordBotToken())
-				.enableIntents(List.of(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES))
+				.enableIntents(List.of(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS))
 				.addEventListeners(listeners.toArray(new Object[0]))
 				.build().awaitReady();
 

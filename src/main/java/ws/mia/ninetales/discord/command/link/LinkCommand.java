@@ -7,12 +7,17 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Component;
+import ws.mia.ninetales.EnvironmentService;
+import ws.mia.ninetales.discord.GuildRankService;
 import ws.mia.ninetales.discord.command.SlashCommand;
 import ws.mia.ninetales.hypixel.HypixelAPI;
 import ws.mia.ninetales.mojang.MojangAPI;
 import ws.mia.ninetales.mongo.MongoUserService;
 
+import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -22,12 +27,15 @@ public class LinkCommand extends SlashCommand {
 	private final MojangAPI mojangAPI;
 	private final HypixelAPI hypixelAPI;
 	private final MongoUserService mongoUserService;
+	private final EnvironmentService environmentService;
 
-	public LinkCommand(MojangAPI mojangAPI, HypixelAPI hypixelAPI, MongoUserService mongoUserService) {
+	public LinkCommand(MojangAPI mojangAPI, HypixelAPI hypixelAPI, MongoUserService mongoUserService, EnvironmentService environmentService) {
 		super();
 		this.mojangAPI = mojangAPI;
 		this.hypixelAPI = hypixelAPI;
 		this.mongoUserService = mongoUserService;
+		this.environmentService = environmentService;
+
 	}
 
 	@Override
@@ -38,6 +46,11 @@ public class LinkCommand extends SlashCommand {
 
 	@Override
 	public void onCommand(SlashCommandInteractionEvent event) {
+		if(!Objects.equals(event.getChannelId(), environmentService.getLinkChannelId())) {
+			event.reply("If you want to link, use <#%s>".formatted(environmentService.getLinkChannelId())).setEphemeral(true).queue();
+			return;
+		}
+
 		OptionMapping username = event.getOption("username");
 		if (username == null) {
 			event.reply("Specify your IGN").setEphemeral(true).queue();
@@ -76,6 +89,9 @@ public class LinkCommand extends SlashCommand {
 		}
 		event.reply("Successfully linked you to `" + username.getAsString() + "`!\nWelcome to Ninetales :3").setEphemeral(true).queue();
 		log.info("Linked {} (IGN) to {} (Discord)", username.getAsString(), event.getUser().getName());
+
+		// sync roles after DB has updated
+//		taskScheduler.schedule(guildRankService::syncRoles, Instant.now().plusSeconds(5));
 	}
 
 

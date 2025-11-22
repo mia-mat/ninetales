@@ -7,6 +7,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,6 +36,17 @@ public class MongoUserService {
 
 		usersCollection.insertOne(userDoc);
 		return true;
+	}
+
+	public List<NinetalesUser> getAllUsers() {
+		List<NinetalesUser> users = new ArrayList<>();
+		usersCollection.find().forEach(doc -> {
+			NinetalesUser user = documentToUser(doc);
+			if (user != null) {
+				users.add(user);
+			}
+		});
+		return users;
 	}
 
 	public NinetalesUser getUser(long discordId) {
