@@ -111,13 +111,13 @@ public class ApplicationService {
 	}
 
 	private NinetalesUser applicationAcceptDenyValidation(SlashCommandInteractionEvent event) {
-		if(Objects.requireNonNull(event.getMember()).getUnsortedRoles().stream().noneMatch(r -> r.getId().equals(environmentService.getTailRoleId()))) {
+		if (Objects.requireNonNull(event.getMember()).getUnsortedRoles().stream().noneMatch(r -> r.getId().equals(environmentService.getTailRoleId()))) {
 			event.reply("Hey! You can't do that! :p").setEphemeral(true).queue();
 			return null;
 		}
 
 		NinetalesUser ntUser = mongoUserService.getUserByApplicationChannelId(event.getChannelIdLong());
-		if(ntUser == null) {
+		if (ntUser == null) {
 			event.reply("Run this in an application channel :3").setEphemeral(true).queue();
 			return null;
 		}
@@ -126,81 +126,68 @@ public class ApplicationService {
 
 	public void acceptApplication(SlashCommandInteractionEvent event) {
 		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
-		if(ntUser == null) return;
+		if (ntUser == null) return;
 
 		boolean isGuildApp = ntUser.getGuildApplicationChannelId() != null; // if false, it's a discord app
-		if(!isGuildApp && ntUser.getDiscordApplicationChannelId() == null) throw new RuntimeException("uhh " + ntUser.toString());
+		if (!isGuildApp && ntUser.getDiscordApplicationChannelId() == null)
+			throw new RuntimeException("uhh " + ntUser.toString());
 
 		if(isGuildApp) {
-			// TODO send embed in guild channel
-
+			acceptGuildApplication(event, ntUser);
+		} else {
+			acceptDiscordApplication(event, ntUser);
 		}
+	}
+
+	private void acceptDiscordApplication(SlashCommandInteractionEvent event, NinetalesUser ntUser) {
+		event.getGuild().getTextChannelById(environmentService.getDiscordJoinMessageChannelId())
+				.sendMessage("Welcome to Ninetales <@%s>!".formatted(ntUser.getDiscordId()))
+				.queue();
 
 		OptionMapping optMessage = event.getOption("message");
 
 		Objects.requireNonNull(event.getGuild()).retrieveMemberById(ntUser.getDiscordId()).queue(member -> {
 			member.getUser().openPrivateChannel().queue(p -> {
-				if(isGuildApp) {
-					p.sendMessage("After careful consideration by our staff team, your application to join Ninetales has been **accepted**!\nWelcome to the guild <3")
-							.queue();
-					mongoUserService.setStatus(ntUser.getDiscordId(), UserStatus.GUILD_MEMBER);
-					event.getChannel().asTextChannel().sendMessage("Your application has been accepted! Accept your Hypixel invite.").queue();
-					event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
-					mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), true);
-
-					Objects.requireNonNull(
-							event.getGuild()).removeRoleFromMember(UserSnowflake.fromId(event.getUser().getId()),
-							Objects.requireNonNull(event.getGuild().getRoleById(environmentService.getVisitorRoleId()))
-					).queue();
-
-
-				} else {
-					p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales discord has been **accepted**!\nWelcome :3")
-							.queue();
-					mongoUserService.setStatus(ntUser.getDiscordId(), UserStatus.DISCORD_MEMBER);
-					Objects.requireNonNull(
-							event.getGuild()).addRoleToMember(UserSnowflake.fromId(event.getUser().getId()),
-							Objects.requireNonNull(event.getGuild().getRoleById(environmentService.getVisitorRoleId()))
-					).queue();
-				}
-
-				if(optMessage != null && !optMessage.getAsString().isBlank()) {
+				p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales discord has been **accepted**!\nWelcome :3")
+						.queue();
+				if (optMessage != null && !optMessage.getAsString().isBlank()) {
 					p.sendMessage("A message from our tails: " + optMessage.getAsString()).queue();
 				}
-			}, (t)-> {
-				event.reply("Failed to accept :(\n"+t.toString()).setEphemeral(true).queue();
-			});
+
+				mongoUserService.setDiscordApplicationChannelId(ntUser.getDiscordId(), null);
+
+				mongoUserService.setStatus(ntUser.getDiscordId(), UserStatus.DISCORD_MEMBER);
+				Objects.requireNonNull(
+						event.getGuild()).addRoleToMember(UserSnowflake.fromId(event.getUser().getId()),
+						Objects.requireNonNull(event.getGuild().getRoleById(environmentService.getVisitorRoleId()))
+				).queue();
+			}, (t) -> event.reply("Failed to accept :(\n" + t.toString()).setEphemeral(true).queue());
 		});
-
-
 	}
 
-	public void denyApplication(SlashCommandInteractionEvent event) {
-		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
-		if(ntUser == null) return;
+	private void acceptGuildApplication(SlashCommandInteractionEvent event, NinetalesUser ntUser) {
+		OptionMapping optMessage = event.getOption("message");
 
-		boolean isGuildApp = ntUser.getGuildApplicationChannelId() != null; // if false, it's a discord app
-		if(!isGuildApp && ntUser.getDiscordApplicationChannelId() == null) throw new RuntimeException("uhh " + ntUser.toString());
-
-		OptionMapping optMessage = event.getOption("reason");
-
-		event.getGuild().retrieveMemberById(ntUser.getDiscordId()).queue(member -> {
+		Objects.requireNonNull(event.getGuild()).retrieveMemberById(ntUser.getDiscordId()).queue(member -> {
 			member.getUser().openPrivateChannel().queue(p -> {
-				if(isGuildApp) {
-					p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales guild has been **denied**.")
-							.queue();
-				} else {
-					p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales discord has been **denied**.")
-							.queue();
+
+				p.sendMessage("After careful consideration by our staff team, your application to join Ninetales has been **accepted**!\nWelcome to the guild <3")
+						.queue();
+				if (optMessage != null && !optMessage.getAsString().isBlank()) {
+					p.sendMessage("A message from our tails: " + optMessage.getAsString()).queue();
 				}
 
-				if(optMessage != null && !optMessage.getAsString().isBlank()) {
-					p.sendMessage("Reason: " + optMessage.getAsString()).queue();
-				}
-				event.getChannel().asTextChannel().delete().queue();
-			}, (t)-> {
-				event.reply("Failed to deny :(\n"+t.toString()).setEphemeral(true).queue();
-			});
+				event.getChannel().asTextChannel().sendMessage("Your application has been accepted! Accept your Hypixel invite.").queue();
+				event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
+
+				mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), true);
+
+				mongoUserService.setStatus(ntUser.getDiscordId(), UserStatus.GUILD_MEMBER);
+				Objects.requireNonNull(
+						event.getGuild()).removeRoleFromMember(UserSnowflake.fromId(event.getUser().getId()),
+						Objects.requireNonNull(event.getGuild().getRoleById(environmentService.getVisitorRoleId()))
+				).queue();
+			}, (t) -> event.reply("Failed to accept :(\n" + t.toString()).setEphemeral(true).queue());
 		});
 
 	}
@@ -208,17 +195,56 @@ public class ApplicationService {
 	/**
 	 * Close an already accepted application channel once the player has been successfully managed to join.
 	 */
-	public void closeAcceptedApplication(SlashCommandInteractionEvent event) {
+	public void closeAcceptedGuildApplication(SlashCommandInteractionEvent event) {
 		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
-		if(ntUser == null) return;
+		if (ntUser == null) return;
 
-		if(!ntUser.isAwaitingHypixelInvite()) {
+		if (!ntUser.isAwaitingHypixelInvite()) {
 			event.reply("That user isn't awaiting an invite. Did you mean to /accept-app?").setEphemeral(true).queue();
 			return;
 		}
 
+		if (environmentService.getGuildJoinMessageChannelId() != null) {
+			event.getGuild().getTextChannelById(environmentService.getGuildJoinMessageChannelId())
+					.sendMessage("<@%s> has joined the guild!".formatted(ntUser.getDiscordId()))
+					.queue();
+		}
+
+		mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 		mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
 		event.getChannel().asTextChannel().delete().queue();
+
+	}
+
+	public void denyApplication(SlashCommandInteractionEvent event) {
+		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
+		if (ntUser == null) return;
+
+		boolean isGuildApp = ntUser.getGuildApplicationChannelId() != null; // if false, it's a discord app
+		if (!isGuildApp && ntUser.getDiscordApplicationChannelId() == null) {
+			throw new RuntimeException("uhh " + ntUser.toString());
+		}
+
+		OptionMapping optMessage = event.getOption("reason");
+
+		event.getGuild().retrieveMemberById(ntUser.getDiscordId()).queue(member -> {
+			member.getUser().openPrivateChannel().queue(p -> {
+				if (isGuildApp) {
+					p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales guild has been **denied**.")
+							.queue();
+				} else {
+					p.sendMessage("After careful consideration by our staff team, your application to join the Ninetales discord has been **denied**.")
+							.queue();
+				}
+
+				if (optMessage != null && !optMessage.getAsString().isBlank()) {
+					p.sendMessage("Reason: " + optMessage.getAsString()).queue();
+				}
+				event.getChannel().asTextChannel().delete().queue();
+			}, (t) -> {
+				event.reply("Failed to deny :(\n" + t.toString()).setEphemeral(true).queue();
+			});
+		});
 
 	}
 

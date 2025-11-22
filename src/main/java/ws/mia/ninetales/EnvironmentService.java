@@ -70,4 +70,12 @@ public class EnvironmentService {
 		return System.getenv("LINK_CHANNEL_ID");
 	}
 
+	public String getDiscordJoinMessageChannelId() {
+		return System.getenv("DISCORD_JOIN_MESSAGE_CHANNEL_ID");
+	}
+
+	public String getGuildJoinMessageChannelId() {
+		return System.getenv("GUILD_JOIN_MESSAGE_CHANNEL_ID");
+	}
+
 }

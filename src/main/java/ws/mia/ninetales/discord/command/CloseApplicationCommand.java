@@ -1,7 +1,6 @@
 package ws.mia.ninetales.discord.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.springframework.stereotype.Component;
@@ -26,6 +25,6 @@ public class CloseApplicationCommand extends SlashCommand {
 
 	@Override
 	public void onCommand(SlashCommandInteractionEvent event) {
-		applicationService.closeAcceptedApplication(event);
+		applicationService.closeAcceptedGuildApplication(event);
 	}
 }

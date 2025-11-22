@@ -34,7 +34,7 @@ public class GuildRankService {
 
 	@Scheduled(fixedRate = 1000 * 60 * 10L) //10mins
 	public void syncRoles() {
-		log.info("Performing role sync");
+		log.debug("Performing role sync");
 
 		Guild guild = jda.getGuildById(environmentService.getDiscordGuildId());
 		if (guild == null) {
