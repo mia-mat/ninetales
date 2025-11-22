@@ -75,9 +75,6 @@ public class PasteWelcomeMessageCommand extends SlashCommand {
 						event.reply("You already have an open application, you can't apply again you goober :p").setEphemeral(true).queue();
 					},
 					(tc, nt) -> {
-						tc.sendMessage("meow").queue();
-						tc.sendMessage("uhh, tell us about yourself or something idk").queue();
-
 						event.reply("Head over to <#%s> to fill in your application :3".formatted(tc.getIdLong())).setEphemeral(true).queue();
 					});
 		}
@@ -95,9 +92,6 @@ public class PasteWelcomeMessageCommand extends SlashCommand {
 						event.reply("You already have an open application, you can't apply again you goober :p").setEphemeral(true).queue();
 					},
 					(tc, nt) -> {
-						tc.sendMessage("meow").queue();
-						tc.sendMessage("uhh, tell us about yourself or something idk").queue();
-
 						event.reply("Head over to <#%s> to fill in your application :3".formatted(tc.getIdLong())).setEphemeral(true).queue();
 					});
 		}

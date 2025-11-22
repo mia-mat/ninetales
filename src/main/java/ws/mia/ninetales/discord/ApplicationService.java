@@ -2,6 +2,7 @@ package ws.mia.ninetales.discord;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -22,6 +23,18 @@ import java.util.function.Consumer;
 
 @Service
 public class ApplicationService {
+
+	private static final List<String> GUILD_APPLICATION_PROCESS = List.of(
+			"- 1. Why Ninetales? (what stood out?)",
+			"- 2. What do you bring? (Tell us about you!)",
+			"- 3. Do you know anyone? (Any interactions with Guild Members)",
+			"- 4. Anything else you want to add?"
+	);
+
+	private static final List<String> DISCORD_APPLICATION_PROCESS = List.of(
+			"- 1. Who are you? (Tell us anything you want to tell!)",
+			"- 2. What brings you here? (Why do you want to be here?)"
+	);
 
 	private final MongoUserService mongoUserService;
 	private final EnvironmentService environmentService;
@@ -58,6 +71,7 @@ public class ApplicationService {
 				.setTopic("Ninetales Discord Application for " + mcUsername)
 				.queue(tc -> {
 					mongoUserService.setDiscordApplicationChannelId(user.getIdLong(), tc.getIdLong());
+					sendNextMessage(tc);
 					success.accept(tc, ntUser);
 				});
 
@@ -88,6 +102,7 @@ public class ApplicationService {
 				.setTopic("Ninetales Guild Application for " + mcUsername)
 				.queue(tc -> {
 					mongoUserService.setGuildApplicationChannelId(user.getIdLong(), tc.getIdLong());
+					sendNextMessage(tc);
 					success.accept(tc, ntUser);
 				});
 
@@ -244,6 +259,33 @@ public class ApplicationService {
 			}, (t) -> {
 				event.reply("Failed to deny :(\n" + t.toString()).setEphemeral(true).queue();
 			});
+		});
+
+	}
+
+	public void sendNextMessage(TextChannel channel) {
+		NinetalesUser user = mongoUserService.getUserByApplicationChannelId(channel.getIdLong());
+		if(user == null) return;
+
+		boolean isGuildApp = user.getGuildApplicationChannelId() != null;
+
+		if(!isGuildApp && user.getDiscordApplicationChannelId() == null) {
+			throw new RuntimeException("huh " + user);
+		}
+		channel.getHistory().retrievePast(100).queue(messages -> {
+			long botMessages = messages.stream()
+					.filter(msg -> msg.getAuthor().equals(channel.getJDA().getSelfUser()))
+					.count();
+
+			List<String> process = isGuildApp ? GUILD_APPLICATION_PROCESS : DISCORD_APPLICATION_PROCESS;
+
+			if (botMessages < process.size()) {
+				channel.sendMessage(process.get((int) botMessages)).queue();
+			}
+			if (botMessages == process.size()) {
+				channel.sendMessage("<@&" + environmentService.getTailRoleId() + ">").setAllowedMentions(List.of(Message.MentionType.ROLE)).queue();
+			}
+
 		});
 
 	}
