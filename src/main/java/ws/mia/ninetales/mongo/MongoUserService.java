@@ -138,6 +138,14 @@ public class MongoUserService {
 		);
 	}
 
+	public void setTailDiscussionChannelId(long discordId, Long channelId) {
+		ensureUserExists(discordId);
+		usersCollection.updateOne(
+				Filters.eq("discordId", discordId),
+				Updates.set("tailDiscussionChannelId", channelId)
+		);
+	}
+
 	public void setQuestionChannelId(long discordId, Long channelId) {
 		ensureUserExists(discordId);
 		usersCollection.updateOne(
@@ -163,7 +171,8 @@ public class MongoUserService {
 	}
 
 	private void ensureUserExists(long discordId) {
-		if (!isUserLinked(discordId)) {
+		Document existing = usersCollection.find(Filters.eq("discordId", discordId)).first();
+		if (existing == null) {
 			Document userDoc = new Document()
 					.append("discordId", discordId);
 			usersCollection.insertOne(userDoc);
@@ -185,7 +194,10 @@ public class MongoUserService {
 
 		ninetalesUser.setDiscordApplicationChannelId(doc.getLong("discordApplicationChannelId"));
 		ninetalesUser.setGuildApplicationChannelId(doc.getLong("guildApplicationChannelId"));
+		ninetalesUser.setTailDiscussionChannelId(doc.getLong("tailDiscussionChannelId"));
+
 		ninetalesUser.setQuestionChannelId(doc.getLong("questionChannelId"));
+
 		ninetalesUser.setAwaitingHypixelInvite(doc.getBoolean("awaitingHypixelInvite", false));
 		ninetalesUser.setDiscordMember(doc.getBoolean("discordMember", false));
 

@@ -8,6 +8,7 @@ public class NinetalesUser {
 	private UUID minecraftUuid;
 	private Long discordApplicationChannelId;
 	private Long guildApplicationChannelId;
+	private Long tailDiscussionChannelId;
 	private boolean awaitingHypixelInvite;
 	private Long questionChannelId;
 	private boolean discordMember;
@@ -78,5 +79,13 @@ public class NinetalesUser {
 
 	protected void setAwaitingHypixelInvite(boolean awaitingHypixelInvite) {
 		this.awaitingHypixelInvite = awaitingHypixelInvite;
+	}
+
+	public Long getTailDiscussionChannelId() {
+		return tailDiscussionChannelId;
+	}
+
+	protected void setTailDiscussionChannelId(Long tailDiscussionChannelId) {
+		this.tailDiscussionChannelId = tailDiscussionChannelId;
 	}
 }

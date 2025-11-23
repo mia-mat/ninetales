@@ -28,6 +28,11 @@ public class RemoteMojangAPI implements MojangAPI {
 	@Nullable
 	@Override
 	public UUID getUuid(String name) {
+		// validate Minecraft username: 1-16 characters (legacy), alphanumeric and underscores only
+		if (name == null || !name.matches("^[a-zA-Z0-9_]{1,16}$")) {
+			return null;
+		}
+
 		try {
 			HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://api.mojang.com/users/profiles/minecraft/"+name))
 					.GET()

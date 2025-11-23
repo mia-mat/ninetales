@@ -1,7 +1,7 @@
 # Ninetales Discord Bot
-A spring application for the discord bot managing **Ninetales** Hypixel guild member verification, role synchronization, and application processing.
+A Spring application for the Discord bot managing **Ninetales** community member verification, role synchronization, and application processing.
 
-**Guild Thread:** [✧ Ninetales ✧](https://hypixel.net/threads/%E2%9C%84-ninetales-%E2%9C%84-tale-%E2%9C%84-a-little-corner-of-the-internet-%E2%9C%84-level-56-%E2%9C%84.5966032/)
+**Hypixel Guild Thread:** [✧ Ninetales ✧](https://hypixel.net/threads/5966032/)
 
 ---
 
@@ -43,14 +43,14 @@ A spring application for the discord bot managing **Ninetales** Hypixel guild me
 
 ### Application Workflow
 1. User clicks "Apply" button on welcome message
-2. Bot creates a private application channel
+2. Bot creates a private application channel and walks user through questions
 3. Tails review and use `/accept-app` or `/deny-app`
 4. For accepted apps: Tail invites to guild, then when the player has joined, run `/close-accepted-app`
 5. Channel is automatically deleted after closure
 
 ### Question Workflow
 1. User clicks "Ask a Question" button on welcome message
-2. Bot creates a private question channel
+2. Bot creates a private question channel for user to ask
 3. Tails answer question, user acknowledges that the answer was satisfactory
 4. Tails use `/close-question` to close the question and delete the channel
 
@@ -92,6 +92,7 @@ A spring application for the discord bot managing **Ninetales** Hypixel guild me
   minecraftUuid: String,
   discordApplicationChannelId: Long,
   guildApplicationChannelId: Long,
+  tailDiscussionChannelId: Long,
   questionChannelId: Long,
   awaitingHypixelInvite: Boolean,
   discordMember: Boolean

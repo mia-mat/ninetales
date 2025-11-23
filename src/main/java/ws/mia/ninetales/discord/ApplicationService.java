@@ -1,6 +1,5 @@
 package ws.mia.ninetales.discord;
 
-import com.mongodb.client.MongoClient;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -31,10 +30,10 @@ public class ApplicationService {
 	);
 
 	private static final List<String> GUILD_APPLICATION_PROCESS = List.of(
-			"- 1. Why Ninetales? (what stood out?)",
-			"- 2. What do you bring? (Tell us about you!)",
-			"- 3. Do you know anyone? (Any interactions with Guild Members)",
-			"- 4. Anything else you want to add?"
+			"1. Why Ninetales? (what stood out?)",
+			"2. What do you bring? (Tell us about you!)",
+			"3. Do you know anyone? (Any interactions with Guild Members)",
+			"4. Anything else you want to add?"
 	);
 
 	private static final String GUILD_APPLICATION_POST_PROCESS = "Thank you for your application. Please give our <@&Tail>s some time to evaluate it. They'll be with you shortly :3";
@@ -44,8 +43,8 @@ public class ApplicationService {
 	);
 
 	private static final List<String> DISCORD_APPLICATION_PROCESS = List.of(
-			"- 1. Who are you? (Tell us anything you want to tell!)",
-			"- 2. What brings you here? (Why do you want to be here?)"
+			"1. Who are you? (Tell us anything you want to tell!)",
+			"2. What brings you here? (Why do you want to be here?)"
 	);
 
 	private static final String DISCORD_APPLICATION_POST_PROCESS = "Thank you for your application. A <@&Tail> will be with you shortly :3";
@@ -71,7 +70,7 @@ public class ApplicationService {
 		}
 
 		NinetalesUser ntUser = mongoUserService.getUser(user.getIdLong());
-		if(ntUser.isDiscordMember()) {
+		if (ntUser.isDiscordMember()) {
 			notOutsiderFailure.accept(ntUser);
 			return false;
 		}
@@ -84,6 +83,7 @@ public class ApplicationService {
 		String mcUsername = mojangAPI.getUsername(ntUser.getMinecraftUuid());
 		if (mcUsername == null) mcUsername = ntUser.getMinecraftUuid().toString(); // fallback (Mojang API issues)
 
+		String finalMcUsername = mcUsername;
 		prepareUserStaffChannel(guild, user, mcUsername, environmentService.getDiscordApplicationsCategoryId())
 				.setTopic("Ninetales Visitor Application for **" + mcUsername + "**")
 				.queue(tc -> {
@@ -91,7 +91,16 @@ public class ApplicationService {
 					DISCORD_APPLICATION_PRE_PROCESS.forEach(s -> tc.sendMessage(s).queue());
 					attemptSendNextApplicationProcessMessage(tc);
 					success.accept(tc, ntUser);
+
+					// Create a private staff discussion channel
+					prepareStaffChannel(guild, "tail-" + finalMcUsername, environmentService.getDiscordApplicationsCategoryId())
+							.setTopic("Tail discussion channel for **" + finalMcUsername + "**'s Visitor application")
+							.queue(tailTc -> {
+								mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), tailTc.getIdLong());
+								tailTc.sendMessage("Use this channel to discuss the visitor application in <#%s>".formatted(tc.getIdLong())).queue();
+							});
 				});
+
 
 		return true;
 	}
@@ -104,7 +113,7 @@ public class ApplicationService {
 		}
 
 		NinetalesUser ntUser = mongoUserService.getUser(user.getIdLong());
-		if(hypixelAPI.getGuildRanks().containsKey(ntUser.getMinecraftUuid())) {
+		if (hypixelAPI.getGuildRanks().containsKey(ntUser.getMinecraftUuid())) {
 			guildMemberFailure.accept(ntUser);
 			return false;
 		}
@@ -117,12 +126,22 @@ public class ApplicationService {
 		String mcUsername = mojangAPI.getUsername(ntUser.getMinecraftUuid());
 		if (mcUsername == null) mcUsername = ntUser.getMinecraftUuid().toString(); // fallback (Mojang API issues)
 
+		String finalMcUsername = mcUsername;
 		prepareUserStaffChannel(guild, user, mcUsername, environmentService.getGuildApplicationsCategoryId())
 				.setTopic("Ninetales Guild Application for **" + mcUsername + "**")
 				.queue(tc -> {
 					mongoUserService.setGuildApplicationChannelId(user.getIdLong(), tc.getIdLong());
 					GUILD_APPLICATION_PRE_PROCESS.forEach(s -> tc.sendMessage(s).queue());
 					attemptSendNextApplicationProcessMessage(tc);
+
+					// Create a private staff discussion channel
+					prepareStaffChannel(guild, "tail-" + finalMcUsername, environmentService.getDiscordApplicationsCategoryId())
+							.setTopic("Tail discussion channel for **" + finalMcUsername + "**'s Guild application")
+							.queue(tailTc -> {
+								mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), tailTc.getIdLong());
+								tailTc.sendMessage("Use this channel to discuss the guild application in <#%s>".formatted(tc.getIdLong())).queue();
+							});
+
 					success.accept(tc, ntUser);
 				});
 
@@ -149,6 +168,7 @@ public class ApplicationService {
 	 * Provides common validation for whether a user has permission to Accept/Deny applications. <br>
 	 * (only Tails can do this, in application channels) <br>
 	 * This method also replies to the event in case of failed validation.
+	 *
 	 * @param event The deny or accept command
 	 * @return Null and an event reply if validation fails, or a `NinetalesUser` object for the user whose application this is if validation is successful
 	 */
@@ -169,6 +189,7 @@ public class ApplicationService {
 
 	/**
 	 * Common accept application helper for discord and guild applications
+	 *
 	 * @param event /accept-app command which this is run through
 	 */
 	public void acceptApplication(SlashCommandInteractionEvent event) {
@@ -183,16 +204,18 @@ public class ApplicationService {
 		OptionMapping optMessage = event.getOption("message");
 		Optional<String> msg = optMessage != null ? Optional.of(optMessage.getAsString()) : Optional.empty();
 
-		if(isGuildApp) {
-			acceptGuildApplication(ntUser, Objects.requireNonNull(event.getGuild()), msg, event.getChannel().asTextChannel());
+		if (isGuildApp) {
+			acceptGuildApplication(event.getUser(), ntUser, Objects.requireNonNull(event.getGuild()), msg, event.getChannel().asTextChannel());
 			event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
 		} else {
 			acceptDiscordApplication(ntUser, Objects.requireNonNull(event.getGuild()), msg);
+			event.reply(":3").setEphemeral(true).queue();
 		}
 	}
 
 	/**
 	 * Common accept deny helper for discord and guild applications
+	 *
 	 * @param event /deny-app command which this is run through
 	 */
 	public void denyApplication(SlashCommandInteractionEvent event) {
@@ -209,9 +232,11 @@ public class ApplicationService {
 		event.getGuild().retrieveMemberById(ntUser.getDiscordId()).queue(member -> {
 			member.getUser().openPrivateChannel().queue(p -> {
 				if (isGuildApp) {
+					mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 					p.sendMessage("After careful consideration by our tails, your application to join the Ninetales guild has been **denied**.")
 							.queue();
 				} else {
+					mongoUserService.setDiscordApplicationChannelId(ntUser.getDiscordId(), null);
 					p.sendMessage("After careful consideration by our tails, your application to join the Ninetales discord has been **denied**.")
 							.queue();
 				}
@@ -220,6 +245,11 @@ public class ApplicationService {
 					p.sendMessage("Reason: " + optMessage.getAsString()).queue();
 				}
 				event.getChannel().asTextChannel().delete().queue();
+
+				if (ntUser.getTailDiscussionChannelId() != null) {
+					mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+					event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
+				}
 			}, (t) -> {
 				event.reply("Failed to deny :(\n" + t.toString()).setEphemeral(true).queue();
 			});
@@ -245,13 +275,20 @@ public class ApplicationService {
 				// give visitor role
 				guild.addRoleToMember(member, guild.getRoleById(environmentService.getVisitorRoleId())).queue();
 
+				// delete channels
+				guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()).delete().queue();
+				if (ntApplicant.getTailDiscussionChannelId() != null) {
+					mongoUserService.setTailDiscussionChannelId(ntApplicant.getDiscordId(), null);
+					guild.getTextChannelById(ntApplicant.getTailDiscussionChannelId()).delete().queue();
+				}
+
 			}, (t) -> {
 				throw new RuntimeException(t);
 			});
 		});
 	}
 
-	private void acceptGuildApplication(NinetalesUser ntApplicant, Guild guild, Optional<String> message, TextChannel appChannel) {
+	private void acceptGuildApplication(User caller, NinetalesUser ntApplicant, Guild guild, Optional<String> message, TextChannel appChannel) {
 		guild.retrieveMemberById(ntApplicant.getDiscordId()).queue(member -> {
 			member.getUser().openPrivateChannel().queue(p -> {
 
@@ -263,6 +300,17 @@ public class ApplicationService {
 
 				mongoUserService.setAwaitingHypixelInvite(ntApplicant.getDiscordId(), true);
 				mongoUserService.setDiscordMember(ntApplicant.getDiscordId(), true); // if they're not already
+
+				// close tail discussion channel (from having new msgs)
+				if (ntApplicant.getTailDiscussionChannelId() != null) {
+					TextChannel tailChannel = guild.getTextChannelById(ntApplicant.getTailDiscussionChannelId());
+					tailChannel.sendMessage("The guild application has been accepted by <@"+caller.getId() + ">. Waiting for Hypixel invite before finalising application.").queue();
+					tailChannel.getPermissionContainer()
+							.upsertPermissionOverride(guild.getRoleById(environmentService.getTailRoleId()))
+							.setAllowed(Permission.VIEW_CHANNEL)
+							.setDenied(Permission.MESSAGE_SEND)
+							.queue();
+				}
 
 				// do role stuff and global message stuff in #closeAcceptedGuildApplication
 			}, (t) -> {
@@ -297,14 +345,19 @@ public class ApplicationService {
 		mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 		mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
 		event.getChannel().asTextChannel().delete().queue();
+
+		if (ntUser.getTailDiscussionChannelId() != null) {
+			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
+		}
 	}
 
 	public void attemptSendNextApplicationProcessMessage(TextChannel channel) {
 		NinetalesUser ntApplicant = mongoUserService.getUserByApplicationChannelId(channel.getIdLong());
-		if(ntApplicant == null) return;
+		if (ntApplicant == null) return;
 
 		boolean isGuildApp = ntApplicant.getGuildApplicationChannelId() != null;
-		if(!isGuildApp && ntApplicant.getDiscordApplicationChannelId() == null) {
+		if (!isGuildApp && ntApplicant.getDiscordApplicationChannelId() == null) {
 			throw new RuntimeException("huh " + ntApplicant);
 		}
 
@@ -317,13 +370,21 @@ public class ApplicationService {
 			botMessages -= (isGuildApp) ? GUILD_APPLICATION_PRE_PROCESS.size() : DISCORD_APPLICATION_PRE_PROCESS.size();
 			List<String> process = isGuildApp ? GUILD_APPLICATION_PROCESS : DISCORD_APPLICATION_PROCESS;
 
+			if(botMessages < 0) botMessages = 0; // fix async issues (sometimes trying to send this before the pre messages causing -1)
+
 			if (botMessages < process.size()) {
 				channel.sendMessage(process.get((int) botMessages)).queue();
 			}
 			if (botMessages == process.size()) {
 				String postProcess = isGuildApp ? GUILD_APPLICATION_POST_PROCESS : DISCORD_APPLICATION_POST_PROCESS;
-				postProcess = postProcess.replace("<@&Tail>", "<@&"+environmentService.getTailRoleId()+">");
-				channel.sendMessage(postProcess).setAllowedMentions(List.of(Message.MentionType.ROLE)).queue();
+				postProcess = postProcess.replace("<@&Tail>", "<@&" + environmentService.getTailRoleId() + ">");
+				channel.sendMessage(postProcess).setAllowedMentions(List.of()).queue(); // don't allow pinging tails here, we do that below.
+
+				// ping in discussion channel
+				channel.getGuild().getTextChannelById(ntApplicant.getTailDiscussionChannelId())
+						.sendMessage("The application has been filled in. Feel free to take a look <@&" + environmentService.getTailRoleId() + "> :3")
+						.queue();
+
 			}
 
 		});
@@ -335,6 +396,12 @@ public class ApplicationService {
 				.addRolePermissionOverride(guild.getPublicRole().getIdLong(), null, List.of(Permission.VIEW_CHANNEL))
 				.addRolePermissionOverride(guild.getRoleById(environmentService.getTailRoleId()).getIdLong(), List.of(Permission.VIEW_CHANNEL), null)
 				.addMemberPermissionOverride(user.getIdLong(), List.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null);
+	}
+
+	private ChannelAction<TextChannel> prepareStaffChannel(Guild guild, String channelName, String categoryId) {
+		return Objects.requireNonNull(guild).createTextChannel(channelName, guild.getCategoryById(categoryId))
+				.addRolePermissionOverride(guild.getPublicRole().getIdLong(), null, List.of(Permission.VIEW_CHANNEL))
+				.addRolePermissionOverride(guild.getRoleById(environmentService.getTailRoleId()).getIdLong(), List.of(Permission.VIEW_CHANNEL), null);
 	}
 
 
