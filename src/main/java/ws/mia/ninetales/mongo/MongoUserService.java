@@ -187,7 +187,7 @@ public class MongoUserService {
 		ninetalesUser.setGuildApplicationChannelId(doc.getLong("guildApplicationChannelId"));
 		ninetalesUser.setQuestionChannelId(doc.getLong("questionChannelId"));
 		ninetalesUser.setAwaitingHypixelInvite(doc.getBoolean("awaitingHypixelInvite", false));
-		ninetalesUser.setAwaitingHypixelInvite(doc.getBoolean("discordMember", false));
+		ninetalesUser.setDiscordMember(doc.getBoolean("discordMember", false));
 
 		return ninetalesUser;
 	}
