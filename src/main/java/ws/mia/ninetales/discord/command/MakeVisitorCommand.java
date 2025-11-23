@@ -44,14 +44,27 @@ public class MakeVisitorCommand extends SlashCommand {
 			return;
 		}
 
-		NinetalesUser user = mongoUserService.getUser(opt.getAsUser().getIdLong());
-		if(user == null) {
-			event.reply("We don't have any information on that user. (Make sure they're linked or otherwise have a DB record)").setEphemeral(true).queue();
+		long userId = opt.getAsUser().getIdLong();
+
+		if(!mongoUserService.isUserLinked(userId)) {
+			event.reply("That user isn't linked. If you want to link them manually too, use `/force-link`").setEphemeral(true).queue();
 			return;
 		}
 
+		NinetalesUser user = mongoUserService.getUser(userId);
+
 		if(user.isDiscordMember()) {
 			event.reply("That user is already a visitor (or above)!").setEphemeral(true).queue();
+			return;
+		}
+
+		if(user.getDiscordApplicationChannelId() != null) {
+			event.reply("That user has an open discord application at <#%s>. Accept them there instead.".formatted(user.getDiscordApplicationChannelId())).setEphemeral(true).queue();
+			return;
+		}
+
+		if(user.getGuildApplicationChannelId() != null) {
+			event.reply("That user has an open guild application at <#%s>. Deny them before running this command.".formatted(user.getGuildApplicationChannelId())).setEphemeral(true).queue();
 			return;
 		}
 
