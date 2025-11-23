@@ -59,20 +59,20 @@ A spring application for the discord bot managing **Ninetales** Hypixel guild me
 
 ## Commands
 ### Admin Commands
-- `/force-link <discord-user> <mc-ign>` - Manually link a Discord user to a Minecraft account
+- `/force-link <discord user> <minecraft username>` - Manually link a Discord user to a Minecraft account
 - `/force-role-sync` - Force an immediate role sync from Hypixel API
-- `/nt-say <msg>` - Send a message as the bot with role/user mention support
+- `/nt-say <message>` - Send a message as the bot
 - `/paste-welcome-message` - Create the welcome message with apply/question buttons
-- `/delete-user-data <discord-user>` - Delete a user's database record
+- `/delete-user-data <discord user>` - Delete a user's database record
 
 ### Tail Commands
-- `/accept-app <msg>` - Accept an application with an optional message
+- `/accept-app <message>` - Accept an application with an optional message
 - `/close-accepted-app` - Close an accepted application channel after member has joined guild
 - `/deny-app <reason>` - Deny an application with an optional reason and close the channel
 - `/close-question` - Close a question channel
 
 ### Public Commands
-- `/link <mc-ign>` - Link your Discord account to your Minecraft account via Hypixel verification
+- `/link <minecraft username>` - Link your Discord account to your Minecraft account 
 
 ## Database Schema (MongoDB)
 
