@@ -137,7 +137,7 @@ public class ApplicationService {
 			return false;
 		}
 
-		prepareUserStaffChannel(guild, user, "q-" + user.getIdLong(), environmentService.getQuestionsCategoryId())
+		prepareUserStaffChannel(guild, user, user.getName(), environmentService.getQuestionsCategoryId())
 				.queue(tc -> {
 					mongoUserService.setQuestionChannelId(user.getIdLong(), tc.getIdLong());
 					success.accept(tc, ntUser);
