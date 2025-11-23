@@ -35,7 +35,7 @@ public class GuildRankService {
 		this.cachedHypixelAPI = cachedHypixelAPI;
 	}
 
-	@Scheduled(fixedRate = 1000 * 60 * 3L) // 3mins so we hit API cache
+	@Scheduled(fixedRate = 1000 * 60 * 6L) // 6mins so we guarantee new users are cached (Hypixel API cache is 5mins)
 	public void syncRoles() {
 		syncRoles(false);
 	}

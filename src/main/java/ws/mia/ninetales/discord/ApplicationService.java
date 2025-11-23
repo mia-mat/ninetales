@@ -222,6 +222,11 @@ public class ApplicationService {
 		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
 		if (ntUser == null) return;
 
+		if(ntUser.isAwaitingHypixelInvite()) {
+			event.reply("This application has already been accepted. If that was a mistake, contact *mia* to take care of this mess :(").setEphemeral(true).queue();
+			return;
+		}
+
 		boolean isGuildApp = ntUser.getGuildApplicationChannelId() != null; // if false, it's a discord app
 		if (!isGuildApp && ntUser.getDiscordApplicationChannelId() == null) {
 			throw new RuntimeException("uhh " + ntUser);
@@ -334,7 +339,8 @@ public class ApplicationService {
 
 		event.getGuild().modifyMemberRoles(event.getGuild().retrieveMemberById(ntUser.getDiscordId()).complete(),
 				List.of(event.getGuild().getRoleById(environmentService.getEggRoleId()), event.getGuild().getRoleById(environmentService.getGuildMemberRoleId())),
-				List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())));
+				List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())))
+				.queue();
 
 		if (environmentService.getGuildJoinMessageChannelId() != null) {
 			event.getGuild().getTextChannelById(environmentService.getGuildJoinMessageChannelId())

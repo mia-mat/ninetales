@@ -78,6 +78,7 @@ A Spring application for the Discord bot managing **Ninetales** community member
 - `/close-accepted-app` - Close an accepted application channel after member has joined guild
 - `/deny-app <reason>` - Deny an application with an optional reason and close the channel
 - `/close-question` - Close a question channel
+- `/make-visitor <discord user>` - Manually make a linked user a visitor without an application
 
 ### Public Commands
 - `/link <minecraft username>` - Link your Discord account to your Minecraft account 
