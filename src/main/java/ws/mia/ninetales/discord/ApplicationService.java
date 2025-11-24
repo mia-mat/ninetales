@@ -134,7 +134,7 @@ public class ApplicationService {
 					attemptSendNextApplicationProcessMessage(tc);
 
 					// Create a private staff discussion channel
-					prepareStaffChannel(guild, "tail-" + finalMcUsername, environmentService.getDiscordApplicationsCategoryId())
+					prepareStaffChannel(guild, "tail-" + finalMcUsername, environmentService.getGuildApplicationsCategoryId())
 							.setTopic("Tail discussion channel for **" + finalMcUsername + "**'s Guild application")
 							.queue(tailTc -> {
 								mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), tailTc.getIdLong());
