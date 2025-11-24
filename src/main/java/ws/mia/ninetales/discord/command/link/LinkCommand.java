@@ -46,7 +46,7 @@ public class LinkCommand extends SlashCommand {
 
 	@Override
 	public CommandData getCommand() {
-		return Commands.slash(COMMAND, "Let us know who you are :3")
+		return Commands.slash(COMMAND, "Let us know who you are")
 				.addOption(OptionType.STRING, "username", "Your Minecraft Username", true);
 	}
 

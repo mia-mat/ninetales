@@ -50,14 +50,9 @@ public class GuildRankService {
 
 		List<NinetalesUser> allNtUsers = mongoUserService.getAllUsers();
 
-		guild.retrieveMembersByIds(false, allNtUsers.stream().map(NinetalesUser::getDiscordId).toList())
-				.onSuccess(members -> {
+		guild.loadMembers().onSuccess(members -> {
 					members.forEach(dcMember -> {
-
 						NinetalesUser ntUser = allNtUsers.stream().filter(a -> a.getDiscordId() == dcMember.getIdLong()).findFirst().orElse(null);
-						if(ntUser == null) return;
-						if(ntUser.getMinecraftUuid() == null) return;
-						HypixelGuildRank rank = ranks.get(ntUser.getMinecraftUuid());
 
 						Role guildMemberRole = Objects.requireNonNull(guild.getRoleById(environmentService.getGuildMemberRoleId()));
 						Role visitorRole = Objects.requireNonNull(guild.getRoleById(environmentService.getVisitorRoleId()));
@@ -68,9 +63,24 @@ public class GuildRankService {
 								HypixelGuildRank.GUILD_MASTER.getRole(guild),
 								guildMemberRole));
 
-						if(rank == null) { // not in the guild
+						if (ntUser == null) {
+							// Likely part of migration. Just remove all roles managed by the bot from them.
+							allGuildRoles.add(visitorRole);
+							guild.modifyMemberRoles(dcMember, List.of(), allGuildRoles).queue();
+							return;
+						}
+
+						if (ntUser.getMinecraftUuid() == null) {
+							// Remove all guild roles since we don't know if they're in the guild
+							guild.modifyMemberRoles(dcMember, List.of(), allGuildRoles).queue();
+							return;
+						}
+
+						HypixelGuildRank rank = ranks.get(ntUser.getMinecraftUuid());
+
+						if (rank == null) { // not in the guild
 							List<Role> rolesToAdd = new ArrayList<>();
-							if(ntUser.isDiscordMember()) {
+							if (ntUser.isDiscordMember()) {
 								rolesToAdd.add(visitorRole);
 							}
 
@@ -79,6 +89,7 @@ public class GuildRankService {
 						}
 
 						// is a guild member
+						//todo check if they joined within like 20m. if they did, send a welcome msg
 						List<Role> rolesToRemove = allGuildRoles;
 						rolesToRemove.removeIf(r -> r.getId().equals(rank.getDiscordRoleId()));
 						rolesToRemove.add(visitorRole);
@@ -91,16 +102,16 @@ public class GuildRankService {
 						mongoUserService.setDiscordMember(ntUser.getDiscordId(), true);
 
 						// check if they have open app channels (close them, it means they've joined the guild)
-						if(ntUser.isAwaitingHypixelInvite()) {
+						if (ntUser.isAwaitingHypixelInvite()) {
 							mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
 						}
 
-						if(ntUser.getGuildApplicationChannelId() != null) {
+						if (ntUser.getGuildApplicationChannelId() != null) {
 							guild.getTextChannelById(ntUser.getGuildApplicationChannelId()).delete().queue();
 							mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 						}
 
-						if(ntUser.getTailDiscussionChannelId() != null) {
+						if (ntUser.getTailDiscussionChannelId() != null) {
 							guild.getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
 							mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
 						}
@@ -108,23 +119,26 @@ public class GuildRankService {
 					});
 				})
 				.onError((t) -> log.warn("Failed to retrieve members", t));
+
+
+
 	}
 
 	// Doesn't remove any roles. Primarily for linking
 	public void syncFirstRole(Member userToSync, Guild guild) {
 		NinetalesUser user = mongoUserService.getUser(userToSync.getIdLong());
-		if(user == null) {
+		if (user == null) {
 			throw new RuntimeException(user.toString());
 		}
 		HypixelGuildRank rank = hypixelAPI.getGuildRanks().get(user.getMinecraftUuid());
-		if(rank == null) {
+		if (rank == null) {
 			mongoUserService.setDiscordMember(user.getDiscordId(), false);
 			return;
 		}
 
 		mongoUserService.setDiscordMember(user.getDiscordId(), true);
 		guild.modifyMemberRoles(userToSync,
-				List.of(guild.getRoleById(environmentService.getGuildMemberRoleId()), rank.getRole(guild)), List.of())
+						List.of(guild.getRoleById(environmentService.getGuildMemberRoleId()), rank.getRole(guild)), List.of())
 				.queue();
 	}
 

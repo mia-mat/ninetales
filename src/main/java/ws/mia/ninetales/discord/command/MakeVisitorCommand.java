@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.springframework.stereotype.Component;
 import ws.mia.ninetales.EnvironmentService;
+import ws.mia.ninetales.discord.ApplicationService;
 import ws.mia.ninetales.mongo.MongoUserService;
 import ws.mia.ninetales.mongo.NinetalesUser;
 
@@ -17,17 +18,20 @@ public class MakeVisitorCommand extends SlashCommand {
 	private static final String COMMAND = "make-visitor";
 	private final EnvironmentService environmentService;
 	private final MongoUserService mongoUserService;
+	private final ApplicationService applicationService;
 
-	public MakeVisitorCommand(EnvironmentService environmentService, MongoUserService mongoUserService) {
+	public MakeVisitorCommand(EnvironmentService environmentService, MongoUserService mongoUserService, ApplicationService applicationService) {
 		super();
 		this.environmentService = environmentService;
 		this.mongoUserService = mongoUserService;
+		this.applicationService = applicationService;
 	}
 
 	@Override
 	public CommandData getCommand() {
 		return Commands.slash(COMMAND, "Skip the discord application process and give a user the visitor role")
 				.addOption(OptionType.USER, "user", "User to amke visitor", true)
+				.addOption(OptionType.BOOLEAN, "join-message", "Whether to send a join message (default false)", false)
 				.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VIEW_AUDIT_LOGS));
 	}
 
@@ -38,13 +42,13 @@ public class MakeVisitorCommand extends SlashCommand {
 			return;
 		}
 
-		OptionMapping opt = event.getOption("user");
-		if(opt == null) {
+		OptionMapping idOpt = event.getOption("user");
+		if(idOpt == null) {
 			event.reply("who?").setEphemeral(true).queue();
 			return;
 		}
 
-		long userId = opt.getAsUser().getIdLong();
+		long userId = idOpt.getAsUser().getIdLong();
 
 		if(!mongoUserService.isUserLinked(userId)) {
 			event.reply("That user isn't linked. If you want to link them manually too, use `/force-link`").setEphemeral(true).queue();
@@ -68,10 +72,17 @@ public class MakeVisitorCommand extends SlashCommand {
 			return;
 		}
 
+		OptionMapping joinOpt = event.getOption("join-message");
+		boolean joinMsg = joinOpt != null && joinOpt.getAsBoolean();
+
 		mongoUserService.setDiscordMember(user.getDiscordId(), true);
 		event.getGuild().retrieveMemberById(user.getDiscordId()).queue(member -> {
 			event.getGuild().addRoleToMember(member, event.getGuild().getRoleById(environmentService.getVisitorRoleId())).queue();
 		});
+
+		if(joinMsg) {
+			applicationService.sendJoinDiscordMessage(event.getGuild(), user.getDiscordId());
+		}
 
 		event.reply("Made <@%s> a visitor :3".formatted(user.getDiscordId())).setEphemeral(true).queue();
 	}

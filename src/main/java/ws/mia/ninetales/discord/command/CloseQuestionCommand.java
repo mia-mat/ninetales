@@ -34,6 +34,7 @@ public class CloseQuestionCommand extends SlashCommand{
 	public void onCommand(SlashCommandInteractionEvent event) {
 		if(Objects.requireNonNull(event.getMember()).getUnsortedRoles().stream().noneMatch(r -> r.getId().equals(environmentService.getTailRoleId()))) {
 			event.reply("Hey! You can't do that! :p").setEphemeral(true).queue();
+			return;
 		}
 
 		 NinetalesUser ntUser = mongoUserService.getUserByQuestionChannelId(event.getChannelIdLong());

@@ -88,4 +88,41 @@ public class NinetalesUser {
 	protected void setTailDiscussionChannelId(Long tailDiscussionChannelId) {
 		this.tailDiscussionChannelId = tailDiscussionChannelId;
 	}
+
+	@Override
+	public String toString() {
+		return "NinetalesUser{" +
+				"discordId=" + discordId +
+				", minecraftUuid=" + minecraftUuid +
+				", discordApplicationChannelId=" + discordApplicationChannelId +
+				", guildApplicationChannelId=" + guildApplicationChannelId +
+				", tailDiscussionChannelId=" + tailDiscussionChannelId +
+				", awaitingHypixelInvite=" + awaitingHypixelInvite +
+				", questionChannelId=" + questionChannelId +
+				", discordMember=" + discordMember +
+				'}';
+	}
+
+	public String toJsonString() {
+		return """
+		{
+		  "discordId": %d,
+		  "minecraftUuid": %s,
+		  "discordApplicationChannelId": %s,
+		  "guildApplicationChannelId": %s,
+		  "tailDiscussionChannelId": %s,
+		  "questionChannelId": %s,
+		  "awaitingHypixelInvite": %b,
+		  "discordMember": %b
+		}""".formatted(
+				discordId,
+				minecraftUuid != null ? "\"" + minecraftUuid + "\"" : "null",
+				discordApplicationChannelId != null ? discordApplicationChannelId : "null",
+				guildApplicationChannelId != null ? guildApplicationChannelId : "null",
+				tailDiscussionChannelId != null ? tailDiscussionChannelId : "null",
+				questionChannelId != null ? questionChannelId : "null",
+				awaitingHypixelInvite,
+				discordMember
+		);
+	}
 }

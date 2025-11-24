@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -47,10 +48,9 @@ public class PasteWelcomeMessageCommand extends SlashCommand {
 				.setColor(new Color(215, 193, 248, 239));
 
 
-		// TODO custom emojis
-		Button bDiscordApply = Button.of(ButtonStyle.SUCCESS, BUTTON_DISCORD_APPLY_ID, "Apply to join the Ninetales Discord");
-		Button bGuildApply = Button.of(ButtonStyle.SUCCESS, BUTTON_GUILD_APPLY_ID, "Apply to join the Ninetales Guild");
-		Button bAskQuestion = Button.of(ButtonStyle.SECONDARY, BUTTON_ASK_QUESTION_ID, "Ask a Question");
+		Button bDiscordApply = Button.of(ButtonStyle.SUCCESS, BUTTON_DISCORD_APPLY_ID, "Apply to join the Ninetales Discord", Emoji.fromCustom("vulpix", 1403199694489784410L, false));
+		Button bGuildApply = Button.of(ButtonStyle.SUCCESS, BUTTON_GUILD_APPLY_ID, "Apply to join the Ninetales Guild", Emoji.fromCustom("shinyavulpix", 1403212590909362369L, false));
+		Button bAskQuestion = Button.of(ButtonStyle.SECONDARY, BUTTON_ASK_QUESTION_ID, "Ask a Question", Emoji.fromCustom("miabox", 1406222247957368872L, false));
 
 		event.getChannel().sendMessageEmbeds(embed.build())
 				.addComponents(ActionRow.of(bDiscordApply), ActionRow.of(bGuildApply), ActionRow.of(bAskQuestion)).queue();
@@ -104,8 +104,7 @@ public class PasteWelcomeMessageCommand extends SlashCommand {
 								.setEphemeral(true).queue();
 					},
 					(tc, ntUser) -> {
-						tc.sendMessage("meow").queue();
-						tc.sendMessage("uhh, ask us a question :3").queue();
+						tc.sendMessage("Ask any questions you have about Ninetales below, a Tail will be with you shortly to help :3").queue();
 
 						event.reply("Head over to <#%s> to ask your questions :3".formatted(tc.getIdLong())).setEphemeral(true).queue();
 					});

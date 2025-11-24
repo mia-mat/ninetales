@@ -44,8 +44,8 @@ A Spring application for the Discord bot managing **Ninetales** community member
 ### Application Workflow
 1. User clicks "Apply" button on welcome message
 2. Bot creates a private application channels and walks user through questions
-3. Tails review in their own private channel and use `/accept-app` or `/deny-app`
-4. For accepted apps: Tail invites to guild, then when the player has joined, run `/close-accepted-app`
+3. Tails review in their own private channel and use `/accept-app` or send a denial message and use `/close-app`
+4. For accepted apps: Tail invites to guild, then when the player has joined, run `/close-app`
 5. Channels are automatically deleted after closure
 
 ### Question Workflow
@@ -69,16 +69,17 @@ A Spring application for the Discord bot managing **Ninetales** community member
 ### Admin Commands
 - `/force-link <discord user> <minecraft username>` - Manually link a Discord user to a Minecraft account
 - `/force-role-sync` - Force an immediate role sync from Hypixel API
-- `/nt-say <message>` - Send a message as the bot
 - `/paste-welcome-message` - Create the welcome message with apply/question buttons
 - `/delete-user-data <discord user>` - Delete a user's database record
+- `/db-record <discord user>` - View a user's database record
 
 ### Tail Commands
+- `/nt-say <message>` - Send a message as the bot
 - `/accept-app <message>` - Accept an application with an optional message
-- `/close-accepted-app` - Close an accepted application channel after member has joined guild
-- `/deny-app <reason>` - Deny an application with an optional reason and close the channel
+- `/close-app` - Close an application once the user has joined the guild, or been denied
 - `/close-question` - Close a question channel
 - `/make-visitor <discord user>` - Manually make a linked user a visitor without an application
+- `/status <discord user>` - View link and guild status of a user
 
 ### Public Commands
 - `/link <minecraft username>` - Link your Discord account to your Minecraft account 

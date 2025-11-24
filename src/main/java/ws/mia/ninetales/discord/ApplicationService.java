@@ -213,58 +213,40 @@ public class ApplicationService {
 	}
 
 	/**
-	 * Common accept deny helper for discord and guild applications
+	 * Common close helper for discord and guild applications
 	 *
-	 * @param event /deny-app command which this is run through
+	 * @param event /close-app command which this is run through
 	 */
-	public void denyApplication(SlashCommandInteractionEvent event) {
+	public void closeApplication(SlashCommandInteractionEvent event) {
 		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
 		if (ntUser == null) return;
-
-		if(ntUser.isAwaitingHypixelInvite()) {
-			event.reply("This application has already been accepted. If that was a mistake, contact *mia* to take care of this mess :(").setEphemeral(true).queue();
-			return;
-		}
 
 		boolean isGuildApp = ntUser.getGuildApplicationChannelId() != null; // if false, it's a discord app
 		if (!isGuildApp && ntUser.getDiscordApplicationChannelId() == null) {
 			throw new RuntimeException("uhh " + ntUser);
 		}
 
-		OptionMapping optMessage = event.getOption("reason");
+		event.getChannel().asTextChannel().delete().queue();
 
-		event.getGuild().retrieveMemberById(ntUser.getDiscordId()).queue(member -> {
-			member.getUser().openPrivateChannel().queue(p -> {
-				if (isGuildApp) {
-					mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
-					p.sendMessage("After careful consideration by our tails, your application to join the Ninetales guild has been **denied**.")
-							.queue();
-				} else {
-					mongoUserService.setDiscordApplicationChannelId(ntUser.getDiscordId(), null);
-					p.sendMessage("After careful consideration by our tails, your application to join the Ninetales discord has been **denied**.")
-							.queue();
-				}
+		if (ntUser.getTailDiscussionChannelId() != null) {
+			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
+		}
 
-				if (optMessage != null && !optMessage.getAsString().isBlank()) {
-					p.sendMessage("Reason: " + optMessage.getAsString()).queue();
-				}
-				event.getChannel().asTextChannel().delete().queue();
+		if(ntUser.isAwaitingHypixelInvite()) {
+			sendJoinGuildMessage(event.getGuild(), ntUser.getDiscordId());
 
-				if (ntUser.getTailDiscussionChannelId() != null) {
-					mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
-					event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
-				}
-			}, (t) -> {
-				event.reply("Failed to deny :(\n" + t.toString()).setEphemeral(true).queue();
-			});
-		});
+			event.getGuild().modifyMemberRoles(event.getGuild().retrieveMemberById(ntUser.getDiscordId()).complete(),
+							List.of(event.getGuild().getRoleById(environmentService.getEggRoleId()), event.getGuild().getRoleById(environmentService.getGuildMemberRoleId())),
+							List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())))
+					.queue();
 
+			mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
+		}
 	}
 
 	private void acceptDiscordApplication(NinetalesUser ntApplicant, Guild guild, Optional<String> message) {
-		guild.getTextChannelById(environmentService.getDiscordJoinMessageChannelId())
-				.sendMessage("Welcome to Ninetales <@%s>!".formatted(ntApplicant.getDiscordId()))
-				.queue();
+		sendJoinDiscordMessage(guild, ntApplicant.getDiscordId());
 
 		guild.retrieveMemberById(ntApplicant.getDiscordId()).queue(member -> {
 			member.getUser().openPrivateChannel().queue(p -> {
@@ -296,8 +278,6 @@ public class ApplicationService {
 		guild.retrieveMemberById(ntApplicant.getDiscordId()).queue(member -> {
 			member.getUser().openPrivateChannel().queue(p -> {
 
-
-
 				UUID gmUuid = hypixelAPI.getGuildRanks().entrySet().stream().filter(entry -> {
 					return entry.getValue().equals(HypixelGuildRank.GUILD_MASTER);
 				}).map(Map.Entry::getKey).findAny().orElse(null);
@@ -309,7 +289,6 @@ public class ApplicationService {
 							.queue();
 					message.ifPresent(msg -> p.sendMessage("A message from our tails: " + msg).queue());
 				});
-
 
 
 				mongoUserService.setAwaitingHypixelInvite(ntApplicant.getDiscordId(), true);
@@ -332,39 +311,6 @@ public class ApplicationService {
 			});
 		});
 
-	}
-
-	/**
-	 * Close an already accepted application channel once the player has been successfully managed to join.
-	 */
-	public void attemptCloseAcceptedGuildApplication(SlashCommandInteractionEvent event) {
-		NinetalesUser ntUser = applicationAcceptDenyValidation(event);
-		if (ntUser == null) return;
-
-		if (!ntUser.isAwaitingHypixelInvite()) {
-			event.reply("That user isn't awaiting an invite. Did you mean to /accept-app?").setEphemeral(true).queue();
-			return;
-		}
-
-		event.getGuild().modifyMemberRoles(event.getGuild().retrieveMemberById(ntUser.getDiscordId()).complete(),
-				List.of(event.getGuild().getRoleById(environmentService.getEggRoleId()), event.getGuild().getRoleById(environmentService.getGuildMemberRoleId())),
-				List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())))
-				.queue();
-
-		if (environmentService.getGuildJoinMessageChannelId() != null) {
-			event.getGuild().getTextChannelById(environmentService.getGuildJoinMessageChannelId())
-					.sendMessage("<@%s> has joined the guild!".formatted(ntUser.getDiscordId()))
-					.queue();
-		}
-
-		mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
-		mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
-		event.getChannel().asTextChannel().delete().queue();
-
-		if (ntUser.getTailDiscussionChannelId() != null) {
-			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
-			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
-		}
 	}
 
 	public void attemptSendNextApplicationProcessMessage(TextChannel channel) {
@@ -419,5 +365,18 @@ public class ApplicationService {
 				.addRolePermissionOverride(guild.getRoleById(environmentService.getTailRoleId()).getIdLong(), List.of(Permission.VIEW_CHANNEL), null);
 	}
 
+	public void sendJoinGuildMessage(Guild guild, Long discordId) {
+		if (environmentService.getGuildJoinMessageChannelId() != null) {
+			guild.getTextChannelById(environmentService.getGuildJoinMessageChannelId())
+					.sendMessage("<@%s> has joined the guild!".formatted(discordId))
+					.queue();
+		}
+	}
+
+	public void sendJoinDiscordMessage(Guild guild, Long discordId) {
+		guild.getTextChannelById(environmentService.getDiscordJoinMessageChannelId())
+				.sendMessage("Welcome to Ninetales <@%s>!".formatted(discordId))
+				.queue();
+	}
 
 }
