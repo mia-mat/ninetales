@@ -242,8 +242,6 @@ public class ApplicationService {
 
 		event.getChannel().asTextChannel().delete().queue();
 
-
-
 		if (ntUser.getTailDiscussionChannelId() != null) {
 			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
 			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
@@ -263,12 +261,12 @@ public class ApplicationService {
 
 		if(ntUser.getGuildApplicationChannelId() != null) {
 			String a = ntUser.isAwaitingHypixelInvite() ? "Accepted" : "Denied";
-			discordLogService.info(event, "%s Hypixel application for <@%s> -> %s".formatted(a, ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
+			discordLogService.info(event, "%s Hypixel application for <@%s> -> `%s`".formatted(a, ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 			mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 		}
 
 		if(ntUser.getDiscordApplicationChannelId() != null) {
-			discordLogService.info(event, "Denied Discord application for <@%s> -> %s".formatted(ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
+			discordLogService.info(event, "Denied Discord application for <@%s> -> `%s`".formatted(ntUser.getDiscordId(),  mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 			mongoUserService.setDiscordApplicationChannelId(ntUser.getDiscordId(), null);
 		}
 

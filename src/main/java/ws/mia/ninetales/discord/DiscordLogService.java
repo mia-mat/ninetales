@@ -65,12 +65,11 @@ public class DiscordLogService {
 		String commandId = cmd != null ? cmd.getId() : "0";
 
 		String fullMessage = "by <@" + event.getUser().getId() + "> in <#" + event.getChannelId() + ">";
+		fullMessage += formatOptions(event);
 
 		if (message != null && !message.isEmpty()) {
 			fullMessage += "\n\n" + message;
 		}
-
-		fullMessage += formatOptions(event);
 
 		this.log(level, "</" + event.getName() + ":" + commandId + ">", fullMessage);
 	}
@@ -106,7 +105,7 @@ public class DiscordLogService {
 				})
 				.collect(Collectors.joining(",\n"));
 
-		return options.isEmpty() ? "" : "\n\n```json\n// Options\n" + options + "\n```";
+		return options.isEmpty() ? "" : "\n```json\n// Options\n" + options + "\n```";
 	}
 
 	public void info(String title, String message) {
