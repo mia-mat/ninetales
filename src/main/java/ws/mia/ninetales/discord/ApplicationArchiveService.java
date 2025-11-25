@@ -69,7 +69,9 @@ public class ApplicationArchiveService {
 			List<MessageEmbed> embeds = new ArrayList<>();
 			messages.forEach(message -> {
 				Color c = message.getMember() != null ? message.getMember().getColor() : null;
-				if (ntMember != null) c = ntMember.getColor(); // more up-to-date
+				if(message.getMember() != null) {
+					if (ntMember != null && ntMember.getId().equals(message.getMember().getId())) c = ntMember.getColor(); // more up-to-date
+				}
 				EmbedBuilder eb = new EmbedBuilder()
 						.setAuthor(message.getAuthor().getEffectiveName(), null, message.getAuthor().getAvatarUrl())
 						.setTimestamp(message.getTimeCreated())
