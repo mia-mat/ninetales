@@ -119,7 +119,6 @@ public class GuildRankService {
 						}
 
 					});
-					discordLogService.debug("Synced Roles", "Performed successful role sync for " + members.size() + " discord members");
 				})
 				.onError((t) -> {
 					log.warn("Failed to retrieve members", t);

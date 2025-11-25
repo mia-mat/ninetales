@@ -1,13 +1,17 @@
 package ws.mia.ninetales.discord;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.forums.ForumPost;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -18,7 +22,9 @@ import ws.mia.ninetales.mojang.MojangAPI;
 import ws.mia.ninetales.mongo.MongoUserService;
 import ws.mia.ninetales.mongo.NinetalesUser;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -54,13 +60,15 @@ public class ApplicationService {
 	private final MojangAPI mojangAPI;
 	private final HypixelAPI hypixelAPI;
 	private final DiscordLogService discordLogService;
+	private final ApplicationArchiveService applicationArchiveService;
 
-	public ApplicationService(MongoUserService mongoUserService, EnvironmentService environmentService, MojangAPI mojangAPI, HypixelAPI hypixelAPI, @Lazy DiscordLogService discordLogService) {
+	public ApplicationService(MongoUserService mongoUserService, EnvironmentService environmentService, MojangAPI mojangAPI, HypixelAPI hypixelAPI, @Lazy DiscordLogService discordLogService, @Lazy ApplicationArchiveService applicationArchiveService) {
 		this.mongoUserService = mongoUserService;
 		this.environmentService = environmentService;
 		this.mojangAPI = mojangAPI;
 		this.hypixelAPI = hypixelAPI;
 		this.discordLogService = discordLogService;
+		this.applicationArchiveService = applicationArchiveService;
 	}
 
 
@@ -146,7 +154,7 @@ public class ApplicationService {
 								mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), tailTc.getIdLong());
 								tailTc.sendMessage("Use this channel to discuss the guild application in <#%s>".formatted(tc.getIdLong())).queue();
 
-								discordLogService.info("Created Guild application channel", "For <@%s> (%s)\nUser channel: <#%s>\nTail Channel: <#%s>"
+								discordLogService.info("Created Guild application channel", "For <@%s> `(%s)`\nUser channel: <#%s>\nTail Channel: <#%s>"
 										.formatted(ntUser.getDiscordId(), finalMcUsername, tc.getId(), tailTc.getId()));
 							});
 
@@ -218,11 +226,11 @@ public class ApplicationService {
 		if (isGuildApp) {
 			acceptGuildApplication(event.getUser(), ntUser, Objects.requireNonNull(event.getGuild()), msg, event.getChannel().asTextChannel());
 			event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
-			discordLogService.info(event, "(for <@%s> -> %s)".formatted(ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
+			discordLogService.info(event, "(for <@%s> `(%s)`)".formatted(ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
 		} else {
 			acceptDiscordApplication(ntUser, Objects.requireNonNull(event.getGuild()), msg);
 			event.reply(":3").setEphemeral(true).queue();
-			discordLogService.info(event, "(for <@%s> -> %s)".formatted(ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
+			discordLogService.info(event, "(for <@%s> `(%s)`)".formatted(ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
 		}
 	}
 
@@ -240,6 +248,8 @@ public class ApplicationService {
 			throw new RuntimeException("uhh " + ntUser);
 		}
 
+		applicationArchiveService.archive(event.getChannel().asTextChannel());
+
 		event.getChannel().asTextChannel().delete().queue();
 
 		if (ntUser.getTailDiscussionChannelId() != null) {
@@ -247,7 +257,7 @@ public class ApplicationService {
 			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
 		}
 
-		if(ntUser.isAwaitingHypixelInvite()) {
+		if (ntUser.isAwaitingHypixelInvite()) {
 			sendJoinGuildMessage(event.getGuild(), ntUser.getDiscordId());
 
 			event.getGuild().modifyMemberRoles(event.getGuild().retrieveMemberById(ntUser.getDiscordId()).complete(),
@@ -255,18 +265,16 @@ public class ApplicationService {
 							List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())))
 					.queue();
 
-
-
 		}
 
-		if(ntUser.getGuildApplicationChannelId() != null) {
-			String a = ntUser.isAwaitingHypixelInvite() ? "Accepted" : "Denied";
-			discordLogService.info(event, "%s Hypixel application for <@%s> -> `%s`".formatted(a, ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
+		if (ntUser.getGuildApplicationChannelId() != null) {
+			String a = ntUser.isAwaitingHypixelInvite() ? "Finalised" : "Denied";
+			discordLogService.info(event, "%s Hypixel application for <@%s> `(%s)`".formatted(a, ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 			mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 		}
 
-		if(ntUser.getDiscordApplicationChannelId() != null) {
-			discordLogService.info(event, "Denied Discord application for <@%s> -> `%s`".formatted(ntUser.getDiscordId(),  mojangAPI.getUsername(ntUser.getMinecraftUuid())));
+		if (ntUser.getDiscordApplicationChannelId() != null) {
+			discordLogService.info(event, "Denied Discord application for <@%s> `(%s)`".formatted(ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 			mongoUserService.setDiscordApplicationChannelId(ntUser.getDiscordId(), null);
 		}
 
@@ -325,7 +333,7 @@ public class ApplicationService {
 				// close tail discussion channel (from having new msgs)
 				if (ntApplicant.getTailDiscussionChannelId() != null) {
 					TextChannel tailChannel = guild.getTextChannelById(ntApplicant.getTailDiscussionChannelId());
-					tailChannel.sendMessage("The guild application has been accepted by <@"+caller.getId() + ">. Waiting for a Hypixel invite before finalising application.").queue();
+					tailChannel.sendMessage("The guild application has been accepted by <@" + caller.getId() + ">. Waiting for a Hypixel invite before finalising application.").queue();
 					tailChannel.getPermissionContainer()
 							.upsertPermissionOverride(guild.getRoleById(environmentService.getTailRoleId()))
 							.setAllowed(Permission.VIEW_CHANNEL)
@@ -359,7 +367,8 @@ public class ApplicationService {
 			botMessages -= (isGuildApp) ? GUILD_APPLICATION_PRE_PROCESS.size() : DISCORD_APPLICATION_PRE_PROCESS.size();
 			List<String> process = isGuildApp ? GUILD_APPLICATION_PROCESS : DISCORD_APPLICATION_PROCESS;
 
-			if(botMessages < 0) botMessages = 0; // fix async issues (sometimes trying to send this before the pre messages causing -1)
+			if (botMessages < 0)
+				botMessages = 0; // fix async issues (sometimes trying to send this before the pre messages causing -1)
 
 			if (botMessages < process.size()) {
 				channel.sendMessage(process.get((int) botMessages)).queue();

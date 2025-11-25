@@ -45,6 +45,16 @@ public class EnvironmentService {
 		return Objects.requireNonNull(System.getenv("QUESTIONS_CATEGORY_ID"));
 	}
 
+	@Nullable
+	public String getDiscordApplicationsArchiveForum() {
+		return System.getenv("DISCORD_APPLICATIONS_ARCHIVE_FORUM_ID");
+	}
+
+	@Nullable
+	public String getGuildApplicationsArchiveForum() {
+		return System.getenv("GUILD_APPLICATIONS_ARCHIVE_FORUM_ID");
+	}
+
 	public String getGuildMemberRoleId() {
 		return Objects.requireNonNull(System.getenv("GUILD_MEMBER_ROLE_ID"));
 	}

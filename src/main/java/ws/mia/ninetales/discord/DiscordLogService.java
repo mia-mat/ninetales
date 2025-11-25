@@ -68,7 +68,8 @@ public class DiscordLogService {
 		fullMessage += formatOptions(event);
 
 		if (message != null && !message.isEmpty()) {
-			fullMessage += "\n\n" + message;
+			if(!fullMessage.trim().endsWith("```")) fullMessage +="\n"; // spacing
+			fullMessage += "\n" + message;
 		}
 
 		this.log(level, "</" + event.getName() + ":" + commandId + ">", fullMessage);
