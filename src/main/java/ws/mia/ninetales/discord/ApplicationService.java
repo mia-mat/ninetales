@@ -227,7 +227,7 @@ public class ApplicationService {
 
 		if (isGuildApp) {
 			acceptGuildApplication(event.getUser(), ntUser, Objects.requireNonNull(event.getGuild()), msg, event.getChannel().asTextChannel());
-			event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-accepted-app here ^w^").setEphemeral(true).queue();
+			event.reply("Accepted :3\nOnce the player has successfully joined the guild, you can run /close-app here ^w^").setEphemeral(true).queue();
 			discordLogService.info(event, "(for <@%s> `(%s)`)".formatted(ntUser.getDiscordId(), ntUser.getMinecraftUuid()));
 		} else {
 			acceptDiscordApplication(ntUser, Objects.requireNonNull(event.getGuild()), msg);
@@ -323,7 +323,7 @@ public class ApplicationService {
 
 				String gmUsername = gmUuid == null ? "lynyy" : mojangAPI.getUsername(gmUuid);
 
-				appChannel.sendMessage("<@%s> Your application has been **accepted**!\nA Tail has sent you a guild invite.\nRun `/guild accept %s` on Hypixel to finalise your application :3".formatted(ntApplicant.getDiscordId(), gmUsername)).queue(aMsg -> {
+				appChannel.sendMessage("<@%s> Your application has been **accepted**!\nA Tail has sent you a guild invite.\nRun `/guild accept %s` on Hypixel to finalise your application :3\nIf you have any questions or issues, send them here.".formatted(ntApplicant.getDiscordId(), gmUsername)).queue(aMsg -> {
 					p.sendMessage("After careful consideration by our staff team, your application to join Ninetales has been **accepted**!\nPlease follow the instructions at %s to finalise your application.\nWelcome to the guild <3".formatted(aMsg.getJumpUrl()))
 							.queue();
 					message.ifPresent(msg -> p.sendMessage("A message from our tails: " + msg).queue());
@@ -337,11 +337,6 @@ public class ApplicationService {
 				if (ntApplicant.getTailDiscussionChannelId() != null) {
 					TextChannel tailChannel = guild.getTextChannelById(ntApplicant.getTailDiscussionChannelId());
 					tailChannel.sendMessage("The guild application has been accepted by <@" + caller.getId() + ">. Waiting for a Hypixel invite before finalising application.").queue();
-					tailChannel.getPermissionContainer()
-							.upsertPermissionOverride(guild.getRoleById(environmentService.getTailRoleId()))
-							.setAllowed(Permission.VIEW_CHANNEL)
-							.setDenied(Permission.MESSAGE_SEND)
-							.queue();
 				}
 
 				// do role stuff and global message stuff in #closeAcceptedGuildApplication

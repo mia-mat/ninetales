@@ -151,15 +151,16 @@ public class GuildRankService {
 		Map<UUID, HypixelAPI.GuildPlayer> players = hypixelAPI.getGuildPlayers();
 		if (players == null) return; // fail
 
-		HypixelGuildRank rank = players.get(user.getMinecraftUuid()).getRank();
-		if (rank == null) {
+		HypixelAPI.GuildPlayer player = players.get(user.getMinecraftUuid());
+
+		if (player == null) {
 			mongoUserService.setDiscordMember(user.getDiscordId(), false);
 			return;
 		}
 
 		mongoUserService.setDiscordMember(user.getDiscordId(), true);
 		guild.modifyMemberRoles(userToSync,
-						List.of(guild.getRoleById(environmentService.getGuildMemberRoleId()), rank.getRole(guild)), List.of())
+						List.of(guild.getRoleById(environmentService.getGuildMemberRoleId()), player.getRank().getRole(guild)), List.of())
 				.queue();
 	}
 

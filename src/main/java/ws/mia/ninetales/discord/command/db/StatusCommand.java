@@ -1,4 +1,4 @@
-package ws.mia.ninetales.discord.command;
+package ws.mia.ninetales.discord.command.db;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.User;
@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ws.mia.ninetales.EnvironmentService;
 import ws.mia.ninetales.discord.DiscordLogService;
+import ws.mia.ninetales.discord.command.SlashCommand;
 import ws.mia.ninetales.hypixel.HypixelAPI;
-import ws.mia.ninetales.hypixel.HypixelGuildRank;
 import ws.mia.ninetales.mojang.MojangAPI;
 import ws.mia.ninetales.mongo.MongoUserService;
 import ws.mia.ninetales.mongo.NinetalesUser;
