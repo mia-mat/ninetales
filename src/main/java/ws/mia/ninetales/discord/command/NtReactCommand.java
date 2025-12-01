@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ws.mia.ninetales.EnvironmentService;
 import ws.mia.ninetales.discord.DiscordLogService;
@@ -24,7 +25,7 @@ public class NtReactCommand extends SlashCommand {
 	private final EnvironmentService environmentService;
 	private final DiscordLogService discordLogService;
 
-	public NtReactCommand(EnvironmentService environmentService, DiscordLogService discordLogService) {
+	public NtReactCommand(EnvironmentService environmentService, @Lazy DiscordLogService discordLogService) {
 		super();
 		this.environmentService = environmentService;
 		this.discordLogService = discordLogService;
