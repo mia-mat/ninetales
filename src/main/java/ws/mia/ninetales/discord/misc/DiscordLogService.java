@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
@@ -15,6 +17,7 @@ import ws.mia.ninetales.EnvironmentService;
 
 import java.awt.*;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 @DependsOn("jda")
 public class DiscordLogService {
 
+	private static final Logger log = LoggerFactory.getLogger(DiscordLogService.class);
 	private final JDA jda;
 	private final EnvironmentService environmentService;
 	private final Map<String, Command> ninetalesCommands;
@@ -60,9 +64,12 @@ public class DiscordLogService {
 
 	public void log(LogLevel level, SlashCommandInteractionEvent event, String message) {
 		Command cmd = ninetalesCommands.get(event.getName());
+		if(cmd == null) {
+			log.warn("Couldn't find command {}. Commands: {}", event.getName(), new HashSet<>(ninetalesCommands.keySet()).toString());
+		}
 		String commandId = cmd != null ? cmd.getId() : "0";
 
-		String fullMessage = "by <@" + event.getUser().getId() + "> in <#" + event.getChannelId() + ">";
+		String fullMessage = "used by <@" + event.getUser().getId() + "> in <#" + event.getChannelId() + ">";
 		fullMessage += formatOptions(event);
 
 		if (message != null && !message.isEmpty()) {
@@ -79,9 +86,12 @@ public class DiscordLogService {
 
 	public void log(LogLevel level, SlashCommandInteractionEvent event, Message message) {
 		Command cmd = ninetalesCommands.get(event.getName());
+		if(cmd == null) {
+			log.warn("Couldn't find command {}. Commands: {}", event.getName(), new HashSet<>(ninetalesCommands.keySet()).toString());
+		}
 		String commandId = cmd != null ? cmd.getId() : "0";
 
-		String fullMessage = "<@" + event.getUser().getId() + "> used at " + message.getJumpUrl();
+		String fullMessage = "used by <@" + event.getUser().getId() + "> at " + message.getJumpUrl();
 		fullMessage += formatOptions(event);
 
 		this.log(level, "</" + event.getName() + ":" + commandId + ">", fullMessage);

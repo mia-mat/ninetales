@@ -81,7 +81,10 @@ public class DiscordRuntimeService {
 
 			@Nullable String updateNote = ninetalesContainer.getLabels().get("ninetales.update-note");
 			if (updateNote != null) {
-				msg.append("\n\n`").append(updateNote).append("`");
+				msg.append("\n\n");
+				for (String line : updateNote.split("\\\\n")) {
+					msg.append("`").append(line).append("`\n");
+				}
 			}
 
 			@Nullable String ninetalesVersion = ninetalesContainer.getLabels().get("arachne.version");
