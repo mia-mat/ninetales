@@ -49,24 +49,27 @@ public class DiscordCommand extends SlashCommand {
         UUID uuid = mojangAPI.getUuid(ign);
 
         if (uuid == null) {
-            event.reply("That IGN doesn't seem to exist :(").setEphemeral(true).queue();
+            event.reply("That IGN doesn't seem to exist :(\n-# (Mojang's API may be down)").setEphemeral(true).queue();
             return;
         }
 
         NinetalesUser ntUser = mongoUserService.getUser(uuid);
         if (ntUser == null) {
-            event.reply("That user hasn't linked yet :(").setEphemeral(true).queue();
+            event.reply("Sorry, we couldn't find that user :(\n-# (Have they linked?)").setEphemeral(true).queue();
             return;
         }
 
-        User discordUser = event.getJDA().getUserById(ntUser.getDiscordId());
-        if (discordUser == null) {
-            event.reply("Discord is having a few issues right now :(\nJust ask them directly!").setEphemeral(true).queue();
-            return;
-        }
+        event.getGuild().retrieveMemberById(ntUser.getDiscordId()).queue(discordUser -> {
+            if (discordUser == null) {
+                event.reply("Discord is having a few issues right now :(\nJust ask them directly!").setEphemeral(true).queue();
+                return;
+            }
 
-        String rep = "`%s` is <@%s> on Discord!".formatted(ign, discordUser.getId());
-        event.reply(rep).setEphemeral(true).queue();
-        discordLogService.debug(event, rep);
+            String rep = "`%s` is <@%s> on Discord!".formatted(ign, discordUser.getId());
+            event.reply(rep).setEphemeral(true).queue();
+            discordLogService.debug(event, rep);
+        });
+
+
     }
 }

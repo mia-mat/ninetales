@@ -8,7 +8,16 @@ import ws.mia.poseidon.api.PoseidonClient;
 import ws.mia.poseidon.api.PoseidonHttpClient;
 import ws.mia.poseidon.api.model.PoseidonContainer;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Scanner;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class DiscordRuntimeService {
@@ -21,10 +30,32 @@ public class DiscordRuntimeService {
 		this.environment = environment;
 	}
 
+
+
 	@PostConstruct
-	private void init() {
+	private void init() throws IOException {
 		if(List.of(environment.getActiveProfiles()).contains("dev")) {
-			discordLogService.warn("Started **(Dev)**", "The bot is now **up**");
+			File dockerFile = new File(System.getProperty("user.dir"), "Dockerfile");
+			String fs = Files.readString(dockerFile.toPath());
+
+			Function<String, String> extractLabel = labelName -> {
+				Pattern pattern = Pattern.compile("LABEL\\s+" + Pattern.quote(labelName) + "\\s*=\\s*\"?([^\"\\n]+)\"?");
+				Matcher matcher = pattern.matcher(fs);
+				return matcher.find() ? matcher.group(1).trim() : null;
+			};
+
+			String version = extractLabel.apply("arachne.version");
+			String updateNote = extractLabel.apply("ninetales.update-note");
+
+			if(version == null || updateNote == null) {
+				discordLogService.warn("Started **(Dev)**", "The bot is now **up**");
+				return;
+			}
+
+			discordLogService.warn("Started **(Dev)**",
+					"The bot is now **up**\n```\nVersion: %s\nUpdate note: %s\n```"
+							.formatted(version, updateNote));
+
 			return;
 		}
 
