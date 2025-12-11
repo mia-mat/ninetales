@@ -1,4 +1,4 @@
-package ws.mia.ninetales.discord.command;
+package ws.mia.ninetales.discord.command.who;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -8,19 +8,20 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ws.mia.ninetales.discord.command.SlashCommand;
 import ws.mia.ninetales.discord.misc.DiscordLogService;
 import ws.mia.ninetales.mojang.MojangAPI;
 import ws.mia.ninetales.mongo.MongoUserService;
 import ws.mia.ninetales.mongo.NinetalesUser;
 
 @Component
-public class WhoCommand extends SlashCommand {
+public class IgnCommand extends SlashCommand {
 	private static final String COMMAND = "ign";
 	private final MongoUserService mongoUserService;
 	private final MojangAPI mojangAPI;
 	private final DiscordLogService discordLogService;
 
-	public WhoCommand(MongoUserService mongoUserService, MojangAPI mojangAPI, @Lazy DiscordLogService discordLogService) {
+	public IgnCommand(MongoUserService mongoUserService, MojangAPI mojangAPI, @Lazy DiscordLogService discordLogService) {
 		super();
 		this.mongoUserService = mongoUserService;
 		this.mojangAPI = mojangAPI;
