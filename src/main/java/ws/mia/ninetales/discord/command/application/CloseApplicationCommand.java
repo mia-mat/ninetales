@@ -26,7 +26,7 @@ public class CloseApplicationCommand extends SlashCommand {
 
 	@Override
 	public CommandData getCommand() {
-		return Commands.slash(COMMAND, "Close application channels without accepting.")
+		return Commands.slash(COMMAND, "Close application channel, finalizing application. (post-accept or deny)")
 				.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VIEW_AUDIT_LOGS));
 	}
 

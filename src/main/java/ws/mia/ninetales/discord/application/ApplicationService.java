@@ -238,10 +238,12 @@ public class ApplicationService {
 			if (ntUser.isAwaitingHypixelInvite()) {
 				sendJoinGuildMessage(event.getGuild(), ntUser.getDiscordId());
 
-				event.getGuild().modifyMemberRoles(event.getGuild().retrieveMemberById(ntUser.getDiscordId()).complete(),
-								List.of(event.getGuild().getRoleById(environmentService.getEggRoleId()), event.getGuild().getRoleById(environmentService.getGuildMemberRoleId())),
-								List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())))
-						.queue();
+				event.getGuild().retrieveMemberById(ntUser.getDiscordId()).queue(discMember -> {
+					event.getGuild().modifyMemberRoles(discMember,
+									List.of(event.getGuild().getRoleById(environmentService.getEggRoleId()), event.getGuild().getRoleById(environmentService.getGuildMemberRoleId())),
+									List.of(event.getGuild().getRoleById(environmentService.getVisitorRoleId())))
+							.queue();
+				});
 
 			}
 
