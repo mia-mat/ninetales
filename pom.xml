@@ -10,7 +10,7 @@
     </parent>
     <groupId>ws.mia</groupId>
     <artifactId>ninetales</artifactId>
-    <version>1.0</version>
+    <version>1.0</version> <!-- This is not used. See the Dockerfile version label instead. -->
     <name>ninetales</name>
     <description>ninetales</description>
     <url/>

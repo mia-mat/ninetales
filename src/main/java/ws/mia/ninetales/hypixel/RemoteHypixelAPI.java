@@ -90,7 +90,7 @@ public class RemoteHypixelAPI implements HypixelAPI {
 
 				HypixelGuildRank rank = HypixelGuildRank.fromHypixel(rankName);
 
-				if (rank != null) {
+				if (rank != null && uuidStr != null && rankName != null) {
 					retMap.put(uuid, new GuildPlayer(uuid, rank, joinTs));
 				}
 			}
