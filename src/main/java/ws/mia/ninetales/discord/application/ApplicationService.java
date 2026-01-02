@@ -232,7 +232,8 @@ public class ApplicationService {
 
 		event.deferReply(true).queue();
 
-		applicationArchiveService.archiveApplication(event.getChannel().asTextChannel(), () -> {
+		TextChannel tailC = event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId());
+		applicationArchiveService.archiveApplication(event.getChannel().asTextChannel(), tailC, () -> {
 			event.getChannel().asTextChannel().delete().queue();
 
 			if (ntUser.isAwaitingHypixelInvite()) {
@@ -259,13 +260,13 @@ public class ApplicationService {
 			}
 
 			mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
+
+			if (ntUser.getTailDiscussionChannelId() != null) {
+				mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+				event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
+			}
 		});
 
-		
-		if (ntUser.getTailDiscussionChannelId() != null) {
-			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
-			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
-		}
 	}
 
 	private void acceptDiscordApplication(NinetalesUser ntApplicant, Guild guild, Optional<String> message) {
@@ -283,7 +284,8 @@ public class ApplicationService {
 
 				// archive channel
 				mongoUserService.setDiscordMember(ntApplicant.getDiscordId(), true);
-				applicationArchiveService.archiveApplication(guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()), () -> {
+				TextChannel tailC = guild.getTextChannelById(ntApplicant.getTailDiscussionChannelId());
+				applicationArchiveService.archiveApplication(guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()), tailC, () -> {
 					// delete channels
 					guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()).delete().queue();
 					if (ntApplicant.getTailDiscussionChannelId() != null) {

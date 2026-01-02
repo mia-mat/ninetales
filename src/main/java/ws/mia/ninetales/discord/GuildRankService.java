@@ -129,19 +129,19 @@ public class GuildRankService {
 						// check if they have open app channels (close them, it means they've joined the guild)
 						if (ntUser.getGuildApplicationChannelId() != null) {
 							TextChannel tc = guild.getTextChannelById(ntUser.getGuildApplicationChannelId());
-							applicationArchiveService.archiveApplication(tc, () -> {
+							TextChannel tailC = guild.getTextChannelById(ntUser.getTailDiscussionChannelId());
+							applicationArchiveService.archiveApplication(tc, tailC, () -> {
 								tc.delete().queue();
 								mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
 
 								if (ntUser.isAwaitingHypixelInvite()) {
 									mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
 								}
-							});
-						}
 
-						if (ntUser.getTailDiscussionChannelId() != null) {
-							guild.getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
-							mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+								guild.getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
+								mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+
+							});
 						}
 
 					});
