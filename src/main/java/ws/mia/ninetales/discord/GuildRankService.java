@@ -114,7 +114,11 @@ public class GuildRankService {
 						List<Role> rolesToRemove = allGuildRoles;
 						rolesToRemove.removeIf(r -> r.getId().equals(rank.getDiscordRoleId()));
 						rolesToRemove.add(visitorRole);
-						List<Role> rolesToAdd = List.of(rank.getRole(guild), guildMemberRole);
+						List<Role> rolesToAdd = new ArrayList<>(List.of(guildMemberRole));
+						Role specificGuildRole = rank.getRole(guild); // could be unknown -> null
+						if(specificGuildRole != null) {
+							rolesToAdd.add(specificGuildRole);
+						}
 						rolesToRemove.removeAll(rolesToAdd); // We want to add the intersection. (since GM role is the same as Tail role)
 
 						guild.modifyMemberRoles(dcMember,
@@ -161,7 +165,6 @@ public class GuildRankService {
 		if (players == null) return; // fail
 
 		HypixelAPI.GuildPlayer player = players.get(user.getMinecraftUuid());
-
 		if (player == null) {
 			mongoUserService.setDiscordMember(user.getDiscordId(), false);
 			return;

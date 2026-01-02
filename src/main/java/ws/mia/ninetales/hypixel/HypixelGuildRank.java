@@ -1,5 +1,6 @@
 package ws.mia.ninetales.hypixel;
 
+import jakarta.annotation.Nullable;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import org.springframework.stereotype.Component;
@@ -9,8 +10,8 @@ public enum HypixelGuildRank {
 	GUILD_MASTER("Guild Master", EnvironmentServiceInjector.environmentService.getTailRoleId()),
 	TAIL("Tails", EnvironmentServiceInjector.environmentService.getTailRoleId()),
 	VULPIX("Vulpix", EnvironmentServiceInjector.environmentService.getVulpixRoleId()),
-	EGG("Egg", EnvironmentServiceInjector.environmentService.getEggRoleId());
-
+	EGG("Egg", EnvironmentServiceInjector.environmentService.getEggRoleId()),
+	UNKNOWN(null, null);
 
 	private final String hypixelRankName;
 	private final String discordRoleId;
@@ -21,14 +22,17 @@ public enum HypixelGuildRank {
 	}
 
 	public String getHypixelRankName() {
-		return hypixelRankName;
+		return hypixelRankName != null ? hypixelRankName : "Unknown";
 	}
 
+	@Nullable
 	public String getDiscordRoleId() {
 		return discordRoleId;
 	}
 
+	@Nullable
 	public Role getRole(Guild guild){
+		if(getDiscordRoleId() == null) return null;
 		return guild.getRoleById(getDiscordRoleId());
 	}
 
@@ -38,7 +42,7 @@ public enum HypixelGuildRank {
 				return rank;
 			}
 		}
-		return null;
+		return UNKNOWN;
 	}
 
 	@Component

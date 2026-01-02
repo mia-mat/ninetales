@@ -30,8 +30,6 @@ public class DiscordRuntimeService {
 		this.environment = environment;
 	}
 
-
-
 	@PostConstruct
 	private void init() throws IOException {
 		if(List.of(environment.getActiveProfiles()).contains("dev")) {

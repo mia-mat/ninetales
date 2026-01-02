@@ -261,6 +261,7 @@ public class ApplicationService {
 			mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
 		});
 
+		
 		if (ntUser.getTailDiscussionChannelId() != null) {
 			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
 			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
