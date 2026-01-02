@@ -351,8 +351,9 @@ public class ApplicationService {
 			botMessages -= (isGuildApp) ? GUILD_APPLICATION_PRE_PROCESS.size() : DISCORD_APPLICATION_PRE_PROCESS.size();
 			List<String> process = isGuildApp ? GUILD_APPLICATION_PROCESS : DISCORD_APPLICATION_PROCESS;
 
-			if (botMessages < 0)
+			if (botMessages < 0) {
 				botMessages = 0; // fix async issues (sometimes trying to send this before the pre messages causing -1)
+			}
 
 			if (botMessages < process.size()) {
 				channel.sendMessage(process.get((int) botMessages)).queue();
