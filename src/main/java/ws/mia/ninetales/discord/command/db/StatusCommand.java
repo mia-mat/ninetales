@@ -85,6 +85,9 @@ public class StatusCommand extends SlashCommand {
 					.append(" (joined ").append(Math.round(Duration.ofMillis(Instant.now().toEpochMilli() - player.getJoinTimestamp()).toDays())).append(" days ago)");
 		} else {
 			response.append("\nThey are **not** in the Ninetales Hypixel guild.");
+
+			response.append("\nThey are %sa discord member (Visitor)".formatted(ntUser.isDiscordMember() ? "" : "**not** "));
+
 		}
 
 		boolean appChannel = false;

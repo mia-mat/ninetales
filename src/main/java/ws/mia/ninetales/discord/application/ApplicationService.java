@@ -232,7 +232,8 @@ public class ApplicationService {
 
 		event.deferReply(true).queue();
 
-		applicationArchiveService.archiveApplication(event.getChannel().asTextChannel(), () -> {
+		TextChannel tailC = event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId());
+		applicationArchiveService.archiveApplication(event.getChannel().asTextChannel(), tailC, () -> {
 			event.getChannel().asTextChannel().delete().queue();
 
 			if (ntUser.isAwaitingHypixelInvite()) {
@@ -259,13 +260,13 @@ public class ApplicationService {
 			}
 
 			mongoUserService.setAwaitingHypixelInvite(ntUser.getDiscordId(), false);
+
+			if (ntUser.getTailDiscussionChannelId() != null) {
+				mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
+				event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
+			}
 		});
 
-		
-		if (ntUser.getTailDiscussionChannelId() != null) {
-			mongoUserService.setTailDiscussionChannelId(ntUser.getDiscordId(), null);
-			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
-		}
 	}
 
 	private void acceptDiscordApplication(NinetalesUser ntApplicant, Guild guild, Optional<String> message) {
@@ -283,7 +284,8 @@ public class ApplicationService {
 
 				// archive channel
 				mongoUserService.setDiscordMember(ntApplicant.getDiscordId(), true);
-				applicationArchiveService.archiveApplication(guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()), () -> {
+				TextChannel tailC = guild.getTextChannelById(ntApplicant.getTailDiscussionChannelId());
+				applicationArchiveService.archiveApplication(guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()), tailC, () -> {
 					// delete channels
 					guild.getTextChannelById(ntApplicant.getDiscordApplicationChannelId()).delete().queue();
 					if (ntApplicant.getTailDiscussionChannelId() != null) {
@@ -351,8 +353,9 @@ public class ApplicationService {
 			botMessages -= (isGuildApp) ? GUILD_APPLICATION_PRE_PROCESS.size() : DISCORD_APPLICATION_PRE_PROCESS.size();
 			List<String> process = isGuildApp ? GUILD_APPLICATION_PROCESS : DISCORD_APPLICATION_PROCESS;
 
-			if (botMessages < 0)
+			if (botMessages < 0) {
 				botMessages = 0; // fix async issues (sometimes trying to send this before the pre messages causing -1)
+			}
 
 			if (botMessages < process.size()) {
 				channel.sendMessage(process.get((int) botMessages)).queue();
