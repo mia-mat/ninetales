@@ -165,7 +165,6 @@ public class GuildRankService {
 		if (players == null) return; // fail
 
 		HypixelAPI.GuildPlayer player = players.get(user.getMinecraftUuid());
-
 		if (player == null) {
 			mongoUserService.setDiscordMember(user.getDiscordId(), false);
 			return;
