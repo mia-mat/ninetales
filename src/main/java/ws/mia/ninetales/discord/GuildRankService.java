@@ -129,7 +129,10 @@ public class GuildRankService {
 						// check if they have open app channels (close them, it means they've joined the guild)
 						if (ntUser.getGuildApplicationChannelId() != null) {
 							TextChannel tc = guild.getTextChannelById(ntUser.getGuildApplicationChannelId());
-							TextChannel tailC = guild.getTextChannelById(ntUser.getTailDiscussionChannelId());
+							TextChannel tailC = ntUser.getTailDiscussionChannelId() != null ? guild.getTextChannelById(ntUser.getTailDiscussionChannelId()) : null;
+							if(tailC == null) { // getting NPE's here sometimes, should be impossible
+                                log.warn("unexpected null tail-channel for {}", ntUser.getDiscordId());
+							}
 							applicationArchiveService.archiveApplication(tc, tailC, () -> {
 								tc.delete().queue();
 								mongoUserService.setGuildApplicationChannelId(ntUser.getDiscordId(), null);
