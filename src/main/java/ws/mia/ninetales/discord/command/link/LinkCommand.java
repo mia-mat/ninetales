@@ -58,8 +58,8 @@ public class LinkCommand extends SlashCommand {
 			return;
 		}
 
-		OptionMapping username = event.getOption("username");
-		if (username == null) {
+		OptionMapping usernameOpt = event.getOption("username");
+		if (usernameOpt == null) {
 			event.reply("Specify your IGN").setEphemeral(true).queue();
 			return;
 		}
@@ -71,7 +71,7 @@ public class LinkCommand extends SlashCommand {
 			return;
 		}
 
-		UUID mojangUuid = mojangAPI.getUuid(username.getAsString().trim());
+		UUID mojangUuid = mojangAPI.getUuid(usernameOpt.getAsString().trim());
 
 		if (mojangUuid == null) {
 			event.reply("We couldn't find your minecraft account :(\nPlease contact a tail\n-# (blame mia)").setEphemeral(true).queue();
@@ -87,7 +87,10 @@ public class LinkCommand extends SlashCommand {
 			return;
 		}
 
-		if (!expectedDiscord.equals(event.getUser().getName())) {
+		// discord usernames can only be lowercase and this confuses some who think capitalisation doesn't matter when setting on hypixel
+		expectedDiscord = expectedDiscord.toLowerCase();
+
+		if (!expectedDiscord.equals(event.getUser().getName().toLowerCase())) {
 			event.reply("That minecraft account isn't linked to your discord!\nFollow the steps above to link your account.\n-# (Hypixel may take a while to update your information, if you have changed your discord within the past few minutes, please wait a moment and try again)").setEphemeral(true).queue();
 			discordLogService.debug(event, "Found wrong discord in Hypixel API (API: `" + expectedDiscord + "`)");
 			return;
@@ -95,13 +98,13 @@ public class LinkCommand extends SlashCommand {
 
 
 		if (!mongoUserService.linkUser(event.getUser().getIdLong(), mojangUuid)) {
-			log.warn("Unable to link {} (IGN) to {} (Discord)", username.getAsString(), event.getUser().getName());
+			log.warn("Unable to link {} (IGN) to {} (Discord)", usernameOpt.getAsString(), event.getUser().getName());
 			event.reply("We couldn't link you :(\nThis likely means that you are already linked.\n-# (blame mia)").setEphemeral(true).queue();
 			discordLogService.debug(event, "Tried to link while already linked");
 			return;
 		}
-		event.reply("Successfully linked you to `" + username.getAsString() + "`!\nWelcome to Ninetales :3").setEphemeral(true).queue();
-		log.info("Linked {} (IGN) to {} (Discord)", username.getAsString(), event.getUser().getName());
+		event.reply("Successfully linked you to `" + usernameOpt.getAsString() + "`!\nWelcome to Ninetales :3").setEphemeral(true).queue();
+		log.info("Linked {} (IGN) to {} (Discord)", usernameOpt.getAsString(), event.getUser().getName());
 		discordLogService.debug(event, "Successfully linked");
 
 		// sync roles once DB has updated
