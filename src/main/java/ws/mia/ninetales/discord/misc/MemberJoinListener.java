@@ -29,7 +29,7 @@ public class MemberJoinListener extends ListenerAdapter {
         if (environmentService.getMemberJoinMessageChannelId() == null) return;
         TextChannel announceChannel = event.getGuild().getTextChannelById(environmentService.getMemberJoinMessageChannelId());
         if(announceChannel != null) {
-            announceChannel.sendMessage("<@%s> joined " + JOIN_SUFFIXES[new Random().nextInt(JOIN_SUFFIXES.length-1)]).queue();
+            announceChannel.sendMessage("<@%s> joined ".formatted(event.getUser().getIdLong()) + JOIN_SUFFIXES[new Random().nextInt(JOIN_SUFFIXES.length-1)]).queue();
         }
     }
 }
