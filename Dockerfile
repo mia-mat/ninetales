@@ -21,9 +21,9 @@ WORKDIR /app
 LABEL internal-port="8080"
 
 LABEL arachne.name="Ninetales Discord Bot"
-LABEL arachne.version="1.1.9"
+LABEL arachne.version="1.2.0"
 
-LABEL ninetales.update-note="Hopefully fixed boost message not sending"
+LABEL ninetales.update-note="Reversed discord system and bot roles in boost and join messages"
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/*.jar ./app.jar

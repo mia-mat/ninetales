@@ -99,8 +99,8 @@ public class EnvironmentService {
 	}
 
 	@Nullable
-	public String getServerBoostMessageChannelId() {
-		return System.getenv("SERVER_BOOST_MESSAGE_CHANNEL_ID");
+	public String getMemberJoinMessageChannelId() {
+		return System.getenv("MEMBER_JOIN_MESSAGE_CHANNEL_ID");
 	}
 
 }
