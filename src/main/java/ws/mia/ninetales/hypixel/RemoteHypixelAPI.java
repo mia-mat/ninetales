@@ -53,7 +53,7 @@ public class RemoteHypixelAPI implements HypixelAPI {
 			log.warn("Interrupted while attempting to get discord from Hypixel for {}", uuid, e);
 			return null;
 		} catch (NullPointerException e) {
-			return null; // object mapper can't read, probably means player just doesn't doesn't have hypixel data.
+			return null; // object mapper can't read, probably means player just doesn't have hypixel data.
 		}
 	}
 

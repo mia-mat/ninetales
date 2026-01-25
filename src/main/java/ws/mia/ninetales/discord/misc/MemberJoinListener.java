@@ -15,7 +15,7 @@ import java.util.Random;
 @Component
 public class MemberJoinListener extends ListenerAdapter {
 
-    private static final String[] JOIN_SUFFIXES = {":3", "owo", "uwu", "meow", "^w^", ">w<"};
+    private static final String[] JOIN_SUFFIXES = {":3", "owo", "uwu", "meow", "^w^", ">w<", "mrow"};
 
     private final EnvironmentService environmentService;
 
@@ -29,7 +29,7 @@ public class MemberJoinListener extends ListenerAdapter {
         if (environmentService.getMemberJoinMessageChannelId() == null) return;
         TextChannel announceChannel = event.getGuild().getTextChannelById(environmentService.getMemberJoinMessageChannelId());
         if(announceChannel != null) {
-            announceChannel.sendMessage("<@%s> joined ".formatted(event.getUser().getIdLong()) + JOIN_SUFFIXES[new Random().nextInt(JOIN_SUFFIXES.length-1)]).queue();
+            announceChannel.sendMessage("<@%s> joined ".formatted(event.getUser().getIdLong()) + JOIN_SUFFIXES[new Random().nextInt(JOIN_SUFFIXES.length)]).queue();
         }
     }
 }
