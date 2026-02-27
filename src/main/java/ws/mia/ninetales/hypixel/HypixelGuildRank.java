@@ -8,6 +8,7 @@ import ws.mia.ninetales.EnvironmentService;
 
 public enum HypixelGuildRank {
 	GUILD_MASTER("Guild Master", EnvironmentServiceInjector.environmentService.getTailRoleId()),
+	CO_OWNER("Co-Owner", EnvironmentServiceInjector.environmentService.getTailRoleId()),
 	TAIL("Tails", EnvironmentServiceInjector.environmentService.getTailRoleId()),
 	VULPIX("Vulpix", EnvironmentServiceInjector.environmentService.getVulpixRoleId()),
 	EGG("Egg", EnvironmentServiceInjector.environmentService.getEggRoleId()),

@@ -21,9 +21,9 @@ WORKDIR /app
 LABEL internal-port="8080"
 
 LABEL arachne.name="Ninetales Discord Bot"
-LABEL arachne.version="1.2.1"
+LABEL arachne.version="1.2.2"
 
-LABEL ninetales.update-note="Fixed off-by-one error"
+LABEL ninetales.update-note="Added new guild rank (maybe hopefully works; i haven't touched this code in months)"
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/*.jar ./app.jar
