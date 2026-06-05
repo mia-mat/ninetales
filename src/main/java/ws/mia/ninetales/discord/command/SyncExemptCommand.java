@@ -53,7 +53,7 @@ public class SyncExemptCommand extends SlashCommand {
 
 		boolean isRoleSyncExemptNew = !user.isRoleSyncExempt();
 
-		mongoUserService.setRoleSyncExempt(userId, !isRoleSyncExemptNew);
+		mongoUserService.setRoleSyncExempt(userId, isRoleSyncExemptNew);
 
 		event.reply("<@%s> is now ".formatted(userId) + (isRoleSyncExemptNew ? "" : "*not* ") + "exempt from role sync!").setEphemeral(true).queue();
 		discordLogService.info(event, "<@%s> is now ".formatted(userId) +  (isRoleSyncExemptNew ? "" : "not ") + "exempt from role sync");
