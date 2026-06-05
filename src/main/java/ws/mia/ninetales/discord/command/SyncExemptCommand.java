@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 @Component
 public class SyncExemptCommand extends SlashCommand {
-	private static final String COMMAND = "nt-say";
+	private static final String COMMAND = "syncexempt";
 	private final MongoUserService mongoUserService;
 	private final EnvironmentService environmentService;
 
