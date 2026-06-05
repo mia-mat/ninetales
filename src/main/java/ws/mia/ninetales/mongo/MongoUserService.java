@@ -186,6 +186,14 @@ public class MongoUserService {
 		);
 	}
 
+	public void setRoleSyncExempt(long discordId, boolean exempt) {
+		ensureUserExists(discordId);
+		usersCollection.updateOne(
+				Filters.eq("discordId", discordId),
+				Updates.set("roleSyncExempt", exempt)
+		);
+	}
+
 	private void ensureUserExists(long discordId) {
 		Document existing = usersCollection.find(Filters.eq("discordId", discordId)).first();
 		if (existing == null) {
@@ -218,6 +226,7 @@ public class MongoUserService {
 		ninetalesUser.setDiscordMember(doc.getBoolean("discordMember", false));
 
 		ninetalesUser.setHasHadGuildJoinMessage(doc.getBoolean("guildJoinMessage", false));
+		ninetalesUser.setRoleSyncExempt(doc.getBoolean("roleSyncExempt", false));
 		return ninetalesUser;
 	}
 

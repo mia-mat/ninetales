@@ -85,6 +85,8 @@ public class GuildRankService {
 							return;
 						}
 
+						if(ntUser.isRoleSyncExempt()) return;
+
 						if (ntUser.getMinecraftUuid() == null) {
 							// Remove all guild roles since we don't know if they're in the guild
 							guild.modifyMemberRoles(dcMember, List.of(), allGuildRoles).queue();

@@ -13,6 +13,7 @@ public class NinetalesUser {
 	private Long questionChannelId;
 	private boolean discordMember;
 	private boolean guildJoinMessage;
+	private boolean roleSyncExempt;
 
 	public NinetalesUser() {
 	}
@@ -48,6 +49,10 @@ public class NinetalesUser {
 
 	public boolean isDiscordMember() {
 		return discordMember;
+	}
+
+	public boolean isRoleSyncExempt() {
+		return roleSyncExempt;
 	}
 
 	protected void setDiscordId(long discordId) {
@@ -98,6 +103,10 @@ public class NinetalesUser {
 		this.tailDiscussionChannelId = tailDiscussionChannelId;
 	}
 
+	protected void setRoleSyncExempt(boolean roleSyncExempt) {
+		this.roleSyncExempt = roleSyncExempt;
+	}
+
 	@Override
 	public String toString() {
 		return "NinetalesUser{" +
@@ -110,22 +119,24 @@ public class NinetalesUser {
 				", questionChannelId=" + questionChannelId +
 				", discordMember=" + discordMember +
 				", guildJoinMessage=" + guildJoinMessage +
+				", roleSyncExempt=" + roleSyncExempt +
 				'}';
 	}
 
 	public String toJsonString() {
 		return """
-		{
-		  "discordId": %d,
-		  "minecraftUuid": %s,
-		  "discordApplicationChannelId": %s,
-		  "guildApplicationChannelId": %s,
-		  "tailDiscussionChannelId": %s,
-		  "questionChannelId": %s,
-		  "awaitingHypixelInvite": %b,
-		  "discordMember": %b
-		  "guildJoinMessage": %b
-		}""".formatted(
+        {
+          "discordId": %d,
+          "minecraftUuid": %s,
+          "discordApplicationChannelId": %s,
+          "guildApplicationChannelId": %s,
+          "tailDiscussionChannelId": %s,
+          "questionChannelId": %s,
+          "awaitingHypixelInvite": %b,
+          "discordMember": %b,
+          "guildJoinMessage": %b,
+          "roleSyncExempt": %b
+        }""".formatted(
 				discordId,
 				minecraftUuid != null ? "\"" + minecraftUuid + "\"" : "null",
 				discordApplicationChannelId != null ? discordApplicationChannelId : "null",
@@ -134,7 +145,8 @@ public class NinetalesUser {
 				questionChannelId != null ? questionChannelId : "null",
 				awaitingHypixelInvite,
 				discordMember,
-				guildJoinMessage
+				guildJoinMessage,
+				roleSyncExempt
 		);
 	}
 }
