@@ -23,7 +23,7 @@ LABEL internal-port="8080"
 LABEL arachne.name="Ninetales Discord Bot"
 LABEL arachne.version="1.2.6"
 
-LABEL ninetales.update-note="Improved logging"
+LABEL ninetales.update-note="Improved-er logging"
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/*.jar ./app.jar

@@ -55,12 +55,18 @@ public class MemberRemovalListener extends ListenerAdapter {
 					.formatted(ntUser.getDiscordId()));
 		}
 
-		mongoUserService.deleteUser(ntUser.getDiscordId());
-
 		String username = event.getUser().getName();
+
 		if(event.getMember() != null) {
 			username = event.getMember().getEffectiveName();
 		}
+
+		if(ntUser.getMinecraftUuid() != null) {
+			String mcUsername = mojangAPI.getUsername(ntUser.getMinecraftUuid());
+			if(mcUsername != null) username = mcUsername;
+		}
+
+		mongoUserService.deleteUser(ntUser.getDiscordId());
 
 		discordLogService.debug("Leave/Kick", "Deleted data for <@" + ntUser.getDiscordId() + "> (" + username + ") due to removal from the discord server");
 	}
