@@ -2,6 +2,8 @@ package ws.mia.ninetales.discord.misc;
 
 import jakarta.annotation.PostConstruct;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import ws.mia.poseidon.api.PoseidonClient;
@@ -22,6 +24,7 @@ import java.util.regex.Pattern;
 @Service
 public class DiscordRuntimeService {
 
+	private static final Logger log = LoggerFactory.getLogger(DiscordRuntimeService.class);
 	private final DiscordLogService discordLogService;
 	private final Environment environment;
 
@@ -90,7 +93,7 @@ public class DiscordRuntimeService {
 			discordLogService.warn(startMsg, msg.toString());
 		} catch (Exception e) {
 			discordLogService.warn("Started", "The bot is now **up**");
-			throw new RuntimeException("Unable to log Poseidon startup message", e);
+			log.warn("Unable to log Poseidon startup message", e);
 		}
 
 	}
