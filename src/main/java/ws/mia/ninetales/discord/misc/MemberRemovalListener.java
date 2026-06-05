@@ -24,31 +24,31 @@ public class MemberRemovalListener extends ListenerAdapter {
 	@Override
 	public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
 		NinetalesUser ntUser = mongoUserService.getUser(event.getUser().getIdLong());
-		if(ntUser == null) return;
+		if (ntUser == null) return;
 
 
-		if(ntUser.getDiscordApplicationChannelId() != null) {
+		if (ntUser.getDiscordApplicationChannelId() != null) {
 			event.getGuild().getTextChannelById(ntUser.getDiscordApplicationChannelId()).delete().queue();
 
 			discordLogService.info("Cleanup", "Closed discord application channel for <@%s> (`%s`) due to discord leave/kick"
 					.formatted(ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 		}
 
-		if(ntUser.getGuildApplicationChannelId() != null) {
+		if (ntUser.getGuildApplicationChannelId() != null) {
 			event.getGuild().getTextChannelById(ntUser.getGuildApplicationChannelId()).delete().queue();
 
 			discordLogService.info("Cleanup", "Closed guild application channel for <@%s> (`%s`) due to discord leave/kick"
 					.formatted(ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 		}
 
-		if(ntUser.getTailDiscussionChannelId() != null) {
+		if (ntUser.getTailDiscussionChannelId() != null) {
 			event.getGuild().getTextChannelById(ntUser.getTailDiscussionChannelId()).delete().queue();
 
 			discordLogService.debug("Cleanup", "Closed tail discussion channel for <@%s> (`%s`) due to discord leave/kick"
 					.formatted(ntUser.getDiscordId(), mojangAPI.getUsername(ntUser.getMinecraftUuid())));
 		}
 
-		if(ntUser.getQuestionChannelId() != null) {
+		if (ntUser.getQuestionChannelId() != null) {
 			event.getGuild().getTextChannelById(ntUser.getQuestionChannelId()).delete().queue();
 
 			discordLogService.info("Cleanup", "Closed question channel for <@%s> due to discord leave/kick"
@@ -56,7 +56,13 @@ public class MemberRemovalListener extends ListenerAdapter {
 		}
 
 		mongoUserService.deleteUser(ntUser.getDiscordId());
-		discordLogService.debug("Leave/Kick", "Deleted data for <@"+ntUser.getDiscordId()+"> due to removal from the discord server");
+
+		String username = event.getUser().getName();
+		if(event.getMember() != null) {
+			username = event.getMember().getEffectiveName();
+		}
+
+		discordLogService.debug("Leave/Kick", "Deleted data for <@" + ntUser.getDiscordId() + "> (" + username + ") due to removal from the discord server");
 	}
 
 }
