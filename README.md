@@ -48,6 +48,7 @@ A Spring application for the Discord bot managing **Ninetales** community member
 - `/paste-welcome-message` - Create the welcome message with apply/question buttons
 - `/delete-user-data <discord user>` - Delete a user's database record
 - `/db-record <discord user>` - View a user's database record
+- `/syncexempt <discord user>` - Exempt a user from role syncs
 
 ### Tail Commands
 - `/nt-say <message>` - Send a message as the bot
@@ -106,6 +107,7 @@ A Spring application for the Discord bot managing **Ninetales** community member
   questionChannelId: Long,
   awaitingHypixelInvite: Boolean,
   discordMember: Boolean,
-  guildJoinMessage: Boolean
+  guildJoinMessage: Boolean, 
+  roleSyncExempt: Boolean
 }
 ```
