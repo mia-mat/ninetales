@@ -20,6 +20,7 @@ import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class DiscordRuntimeService {
@@ -68,7 +69,6 @@ public class DiscordRuntimeService {
 			String poseidonVersion = poseidonClient.getVersion();
 			PoseidonContainer ninetalesContainer = poseidonClient.getContainers().stream().filter(pc -> {
 				if (pc.getLabels() == null) return false;
-				if (!pc.getLabels().containsKey("github.repository")) return false;
 				return "ninetales".equals(pc.getLabels().get("github.repositoryName")) && "master".equals(pc.getLabels().get("github.branch"));
 			}).findAny().orElseThrow();
 
