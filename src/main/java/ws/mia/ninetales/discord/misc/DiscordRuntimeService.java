@@ -69,7 +69,7 @@ public class DiscordRuntimeService {
 			PoseidonContainer ninetalesContainer = poseidonClient.getContainers().stream().filter(pc -> {
 				if (pc.getLabels() == null) return false;
 				if (!pc.getLabels().containsKey("github.repository")) return false;
-				return pc.getLabels().get("github.repository").endsWith("/ninetales");
+				return pc.getLabels().get("github.repositoryName").equals("ninetales") && pc.getLabels().get("github.branch").equals("master");
 			}).findAny().orElseThrow();
 
 			msg.append("\n");
