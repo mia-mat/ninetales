@@ -21,9 +21,9 @@ WORKDIR /app
 LABEL internal-port="8080"
 
 LABEL arachne.name="Ninetales Discord Bot"
-LABEL arachne.version="1.2.7"
+LABEL arachne.version="1.2.8"
 
-LABEL ninetales.update-note="Poseidon 1.1 compatibility"
+LABEL ninetales.update-note="Poseidon 1.2 compatibility"
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/*.jar ./app.jar

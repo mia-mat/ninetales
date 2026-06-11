@@ -12,15 +12,11 @@ import ws.mia.poseidon.api.model.PoseidonContainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 public class DiscordRuntimeService {
@@ -36,7 +32,7 @@ public class DiscordRuntimeService {
 
 	@PostConstruct
 	private void init() throws IOException {
-		if(List.of(environment.getActiveProfiles()).contains("dev")) {
+		if (List.of(environment.getActiveProfiles()).contains("dev")) {
 			File dockerFile = new File(System.getProperty("user.dir"), "Dockerfile");
 			String fs = Files.readString(dockerFile.toPath());
 
@@ -49,7 +45,7 @@ public class DiscordRuntimeService {
 			String version = extractLabel.apply("arachne.version");
 			String updateNote = extractLabel.apply("ninetales.update-note");
 
-			if(version == null || updateNote == null) {
+			if (version == null || updateNote == null) {
 				discordLogService.warn("Started **(Dev)**", "The bot is now **up**");
 				return;
 			}
@@ -69,14 +65,15 @@ public class DiscordRuntimeService {
 			String poseidonVersion = poseidonClient.getVersion();
 			PoseidonContainer ninetalesContainer = poseidonClient.getContainers().stream().filter(pc -> {
 				if (pc.getLabels() == null) return false;
-				return "ninetales".equals(pc.getLabels().get("github.repositoryName")) && "master".equals(pc.getLabels().get("github.branch"));
+				return "ninetales".equals(pc.getLabels().get("deployment.repositoryName")) &&
+						"master".equals(pc.getLabels().get("deployment.branch"));
 			}).findAny().orElseThrow();
 
 			msg.append("\n");
 			msg.append("-# Deployed through Poseidon v").append(poseidonVersion);
 			msg.append("\n");
 
-			String[] ghImg = ninetalesContainer.getLabels().get("github.image").split("-");
+			String[] ghImg = ninetalesContainer.getLabels().get("deployment.image").split("-");
 			String commitId = ghImg[ghImg.length - 1];
 			msg.append("\nCommit ").append("[").append(commitId).append("](https://gh.mia.ws/ninetales/commit/").append(commitId).append(")");
 
