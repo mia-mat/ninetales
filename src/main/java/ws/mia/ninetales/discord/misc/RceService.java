@@ -69,7 +69,7 @@ public class RceService implements ApplicationContextAware {
 
 			// attempt to compile
 			String classpath = System.getProperty("java.class.path");
-			javac.run(null, null, errorStream, "--release", "17", "--classpath", classpath, sourceFile.getPath());
+			javac.run(null, null, errorStream, "--release", "17", "-cp", classpath, sourceFile.getPath());
 
 			if (!errorStream.toString().isBlank()) {
 				String ret = errorStream.toString();
