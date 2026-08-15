@@ -59,7 +59,7 @@ public class RceService implements ApplicationContextAware {
 
 			// save source in .java file.
 			File tempDirPathFile = new File(tempDirPath.toString());
-			File sourceFile = new File(tempDirPathFile, "\\%s.java".formatted(className));
+			File sourceFile = new File(tempDirPathFile, className + ".java");
 			Writer writer = new FileWriter(sourceFile);
 			writer.write(fullSource);
 			writer.close();
@@ -68,7 +68,8 @@ public class RceService implements ApplicationContextAware {
 			ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
 
 			// attempt to compile
-			javac.run(null, null, errorStream, "--release", "17", sourceFile.getPath());
+			String classpath = System.getProperty("java.class.path");
+			javac.run(null, null, errorStream, "--release", "17", "--classpath", classpath, sourceFile.getPath());
 
 			if (!errorStream.toString().isBlank()) {
 				String ret = errorStream.toString();
@@ -76,7 +77,10 @@ public class RceService implements ApplicationContextAware {
 				return ret;
 			}
 
-			URLClassLoader classLoader = new URLClassLoader(new URL[]{tempDirPathFile.toURI().toURL()});
+			URLClassLoader classLoader = new URLClassLoader(
+					new URL[]{tempDirPathFile.toURI().toURL()},
+					Thread.currentThread().getContextClassLoader()
+			);
 
 			Class<?> rceClass = classLoader.loadClass("%s".formatted(className));
 			Object evalOutput = rceClass.getDeclaredMethod("run", ApplicationContext.class).invoke(null, applicationContext);
