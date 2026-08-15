@@ -1,4 +1,4 @@
-# Stage 1: Build with Maven + Temurin JDK 21
+# ---- Build with Maven + Temurin JDK 21
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 WORKDIR /app
@@ -13,8 +13,8 @@ COPY src ./src
 # Build the JAR (skip tests for speed)
 RUN mvn package -DskipTests -B
 
-# Stage 2: Runtime with Temurin JRE 21 (slim)
-FROM eclipse-temurin:21-jre
+# ---- Runtime
+FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
