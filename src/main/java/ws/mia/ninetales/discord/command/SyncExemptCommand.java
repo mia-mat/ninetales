@@ -16,7 +16,7 @@ import ws.mia.ninetales.mongo.NinetalesUser;
 
 @Component
 public class SyncExemptCommand extends SlashCommand {
-	private static final String COMMAND = "syncexempt";
+	private static final String COMMAND = "sync-exempt";
 	private final MongoUserService mongoUserService;
 	private final DiscordLogService discordLogService;
 
@@ -36,7 +36,6 @@ public class SyncExemptCommand extends SlashCommand {
 
 	@Override
 	public void onCommand(SlashCommandInteractionEvent event) {
-
 		OptionMapping idOpt = event.getOption("user");
 		if (idOpt == null) {
 			event.reply("who?").setEphemeral(true).queue();

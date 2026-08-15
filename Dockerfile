@@ -21,9 +21,9 @@ WORKDIR /app
 LABEL internal-port="8080"
 
 LABEL arachne.name="Ninetales Discord Bot"
-LABEL arachne.version="1.2.9"
+LABEL arachne.version="1.3.0"
 
-LABEL ninetales.update-note="Co-Owner rank now gives Tail role rather than Vulpix"
+LABEL ninetales.update-note="Probably a bad idea"
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/*.jar ./app.jar

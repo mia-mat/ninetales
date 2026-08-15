@@ -103,4 +103,10 @@ public class EnvironmentService {
 		return System.getenv("MEMBER_JOIN_MESSAGE_CHANNEL_ID");
 	}
 
+	@Nullable
+	public String getRceUsers() {
+		return System.getenv("RCE_USERS");
+	}
+
+
 }
