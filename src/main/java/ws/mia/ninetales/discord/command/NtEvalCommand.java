@@ -71,7 +71,7 @@ public class NtEvalCommand extends SlashCommand {
 		List<String> imports = importsOpt == null ? List.of() : Arrays.stream(importsOpt.getAsString().split(";")).map(String::trim).toList();
 
 		// be helpful
-		if (!line.endsWith("}")) line = line + ";";
+		if (!line.endsWith("}") && !line.endsWith(";")) line = line + ";";
 		if (!line.contains("return ")) line = "return " + line;
 
 		Object out = rceService.execute(line, imports);

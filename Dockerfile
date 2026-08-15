@@ -19,9 +19,9 @@ WORKDIR /app
 LABEL internal-port="8080"
 
 LABEL arachne.name="Ninetales Discord Bot"
-LABEL arachne.version="1.3.0"
+LABEL arachne.version="1.3.1"
 
-LABEL ninetales.update-note="Probably a bad idea"
+LABEL ninetales.update-note="I tried to be helpful"
 
 # Copy compiled classes and dependency jars
 COPY --from=build /app/target/classes ./classes
