@@ -23,7 +23,7 @@ LABEL arachne.version="1.3.0"
 
 LABEL ninetales.update-note="Probably a bad idea"
 
-# Copy compiled classes and dependency jars (not the fat jar)
+# Copy compiled classes and dependency jars
 COPY --from=build /app/target/classes ./classes
 COPY --from=build /app/target/lib ./lib
 
